@@ -67,24 +67,23 @@ class Socket {
         while true {
             let bytesRead = recv(socketFileDescriptor, &requestBuffer[requestLength], bufferSize - requestLength, 0)
             guard bytesRead > 0 else { return nil }
-            return Request()
+            requestLength += bytesRead
+            if let requestString = String(bytes: requestBuffer[..<requestLength], encoding: .utf8) {
+                return Request.parse(string: requestString);
+            }
         }
     }
     
     func sendResponse(_ response: Response) {
-        let response =
-            """
-            HTTP/1.1 200 OK
-            Content-Type: text/html
-            Content-Length: 52
-
-            <html>
-            <body>
-            <h1>Hello, World!</h1>
-            </body>
-            </html>
-            """
-        let bytes = [UInt8](response.utf8)
-        let sent = send(socketFileDescriptor, bytes, bytes.count, 0);
+        var responseString = response.toString()
+        print(responseString)
+        let responseBytes: [UInt8] = [UInt8](responseString.data)
+        
+        var bytesToSend = responseBytes.count
+        repeat {
+            let bytesSent = send(socketFileDescriptor, responseBytes, bytesToSend, 0);
+            if bytesSent <= 0 { return }
+            bytesToSend -= bytesSent
+        } while bytesToSend > 0
     }
 }

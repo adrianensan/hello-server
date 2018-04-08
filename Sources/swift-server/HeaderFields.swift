@@ -41,6 +41,7 @@ enum ContentType {
     case pdf
     case doc
     case docx
+    case other
     case custom(type: String)
     
     static let baseString = "Content-Type: "
@@ -66,6 +67,7 @@ enum ContentType {
         case        .xml: return "application/xml"
         case        .pdf: return "application/pdf"
         case        .doc: return "application/msword"
+        case       .other: return "application/octet-stream"
         case       .docx: return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         case .custom(let s): return s
         }
