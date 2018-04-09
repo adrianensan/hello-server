@@ -5,6 +5,7 @@ class Response {
     var httpVersion: HTTPVersion = .http1_1
     var status: Status = .ok
     var contentType: ContentType = .none
+    var location: String?
     var body: String = ""
 
     private var socket: Socket?
@@ -35,14 +36,25 @@ class Response {
         string += " "
         string += status.string
         string += "\r\n"
-        string += contentType.string
-        string += "\r\n"
+        switch contentType {
+        case .none:
+            ()
+        default:
+            string += contentType.string
+            string += "\r\n"
+        }
+        if let location = location {
+            string += locationHeader + location
+            string += "\r\n"
+        }
         
         if body.count > 0 {
             string += "Content-Length: \(body.count)"
             string += "\r\n\r\n"
             string += body
         }
+        
+        string += "\r\n\r\n"
         
         return string
     }

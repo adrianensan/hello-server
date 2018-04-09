@@ -22,7 +22,7 @@ class Socket {
             let bytesRead = recv(socketFileDescriptor, &requestBuffer[requestLength], bufferSize - requestLength, 0)
             guard bytesRead > 0 else { return nil }
             requestLength += bytesRead
-            if let requestString = String(bytes: requestBuffer[..<requestLength], encoding: .utf8) {
+            if let requestString = String(bytes: requestBuffer[..<requestLength].filter{$0 != 13}, encoding: .utf8) {
                 return Request.parse(string: requestString);
             }
         }

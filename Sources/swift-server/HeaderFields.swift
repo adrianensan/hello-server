@@ -1,6 +1,7 @@
 import Foundation
 
 let serverHeader = "Server: adrian-ensan-server"
+let locationHeader = "Location: "
 
 enum HTTPVersion {
     case http1_0
@@ -81,18 +82,21 @@ enum ContentType {
 enum Status {
     case ok
     case notFound
+    case movedPermanently
     
     var statusCode: Int {
         switch self {
-        case       .ok: return 200
-        case .notFound: return 404
+        case               .ok: return 200
+        case         .notFound: return 404
+        case .movedPermanently: return 301
         }
     }
     
     var statusDescription: String {
         switch self {
-        case       .ok: return "OK"
-        case .notFound: return "NOT FOUND"
+        case               .ok: return "OK"
+        case         .notFound: return "NOT FOUND"
+        case .movedPermanently: return "Moved Permanently"
         }
     }
     

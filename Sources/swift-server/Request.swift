@@ -4,6 +4,7 @@ enum Method {
     
     case get
     case post
+    case any
     case unknown
     
     static func inferFrom(string: String) -> Method {
