@@ -3,9 +3,10 @@ import PackageDescription
 
 let package = Package(
     name: "swift-server",
+    dependencies: [
+        .package(url: "https://github.com/PerfectlySoft/Perfect-COpenSSL", from: "2.0.0")
+    ],
     targets: [
-        .target(
-            name: "swift-server",
-            dependencies: []),
+        .target(name: "swift-server", dependencies: ["COpenSSL"])
     ]
 )

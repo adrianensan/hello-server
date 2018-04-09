@@ -2,8 +2,7 @@ import Foundation
 extension Request {
     static func parse(string: String) -> Request? {
         var request: Request?
-        let requestString = string.replacingOccurrences(of: "\r", with: "").lowercased()
-        print(requestString)
+        let requestString = String(string.filter{!"\r".contains($0)}).lowercased()
         let headerEnd = requestString.range(of: "\n\n")?.lowerBound ?? requestString.endIndex
         let headerFields = requestString[..<headerEnd].split(separator: "\n")
         for headerField in headerFields {
