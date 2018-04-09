@@ -7,6 +7,7 @@ class Response {
     var contentType: ContentType = .none
     var location: String?
     var body: String = ""
+    var omitBody: Bool = false
 
     private var socket: Socket?
     
@@ -48,13 +49,13 @@ class Response {
             string += "\r\n"
         }
         
-        if body.count > 0 {
+        if body.count > 0 && !omitBody {
             string += "Content-Length: \(body.count)"
             string += "\r\n\r\n"
             string += body
-        }
+        } else { string += "\r\n\r\n" }
         
-        string += "\r\n\r\n"
+
         
         return string
     }

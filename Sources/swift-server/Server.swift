@@ -76,6 +76,11 @@ class Server {
     func handleConnection(socket: Socket) {
         while let request = socket.acceptRequest() {
             let response = Response(clientSocket: socket)
+            if request.method == .head {
+                response.omitBody = true
+                request.method = .get
+            }
+            
             if let handler = getHandlerFor(method: request.method, url: request.url) {
                 handler(request, response)
             } else {
