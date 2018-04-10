@@ -7,7 +7,7 @@ extension Request {
         let headerFields = string[..<(headerEnd?.lowerBound ?? string.endIndex)].split(separator: "\n")
         for headerField in headerFields {
             if let request = request {
-                if headerField.starts(with: cookieHeader) {
+                if headerField.starts(with: Header.cookieHeader) {
                     let cookies = headerField.split(separator: ":", maxSplits: 1)[1].split(separator: ";")
                     for cookieAttribute in cookies {
                         var parts = cookieAttribute.split(separator: "=", maxSplits: 1)
@@ -17,6 +17,7 @@ extension Request {
                             if name.count > 0 { request.cookies[name] = value }
                         }
                     }
+                    print(request.cookies)
                 }
             } else {
                 let segments = headerField.lowercased().split(separator: " ")

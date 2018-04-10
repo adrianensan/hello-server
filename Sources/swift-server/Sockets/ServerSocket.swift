@@ -1,6 +1,8 @@
 import Foundation
 
-class ServerSocket: ClientSocket {
+class ServerSocket: Socket {
+    
+    static let acceptBacklog: Int32 = 20
     
     #if os(Linux)
     static let socketStremType = Int32(SOCK_STREAM.rawValue)
@@ -42,7 +44,7 @@ class ServerSocket: ClientSocket {
             fatalError("bind failed.")
         }
         
-        guard listen(socketFileDescriptor, acceptBacklog) != -1 else {
+        guard listen(socketFileDescriptor, ServerSocket.acceptBacklog) != -1 else {
             fatalError("listen failed.")
         }
     }

@@ -39,10 +39,10 @@ class ClientSSLSocket: ClientSocket {
     }
     
     override func acceptRequest() -> Request? {
-        var requestBuffer: [UInt8] = [UInt8](repeating: 0, count: bufferSize)
+        var requestBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
         var requestLength: Int = 0
         while true {
-            let bytesRead = SSL_read(sslSocket, &requestBuffer[requestLength], Int32(bufferSize - requestLength));
+            let bytesRead = SSL_read(sslSocket, &requestBuffer[requestLength], Int32(Socket.bufferSize - requestLength));
             guard bytesRead > 0 else { return nil }
             requestLength += Int(bytesRead)
             if let requestString = String(bytes: requestBuffer[..<requestLength].filter{$0 != 13}, encoding: .utf8) {

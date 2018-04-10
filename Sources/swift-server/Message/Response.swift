@@ -48,7 +48,7 @@ class Response: Message, CustomStringConvertible {
         string += "\r\n"
         
         if let location = location {
-            string += locationHeader + location
+            string += Header.locationHeader + location
             string += "\r\n"
         }
         
