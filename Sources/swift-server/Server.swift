@@ -20,7 +20,7 @@ class Server {
         return redirectServer
     }
 
-    var serverName: UInt16 = 8181
+    var serverName: String = ""
     var serverAddress: String?
     var httpPort: UInt16 = 80
     var httpsPort: UInt16 = 443
@@ -30,7 +30,7 @@ class Server {
     var handlers = [(method: Method, url: String, handler: (request: Request, response: Response) -> Void)]()
     
     private var usingTLS = false
-    private var listeningSocket: AcceptSocket?
+    private var listeningSocket: ServerSocket?
     
     init() {
         
@@ -56,7 +56,7 @@ class Server {
     }
     
     func useTLS(certificateFile: String, privateKeyFile: String) {
-        SSLSocket.initSSLContext(certificateFile: certificateFile, privateKeyFile: privateKeyFile)
+        ClientSSLSocket.initSSLContext(certificateFile: certificateFile, privateKeyFile: privateKeyFile)
         usingTLS = true
     }
     
@@ -73,7 +73,7 @@ class Server {
         }
     }
     
-    func handleConnection(socket: Socket) {
+    func handleConnection(socket: ClientSocket) {
         while let request = socket.acceptRequest() {
             let response = Response(clientSocket: socket)
             if request.method == .head {
@@ -95,10 +95,12 @@ class Server {
                 Server.httpToHttpsRedirectServer().start()
             }
         }
-        listeningSocket = AcceptSocket(port: usingTLS ? httpsPort : httpPort, usingTLS: usingTLS)
-        while let newClient = listeningSocket?.acceptConnection() {
-            DispatchQueue(label: "client-\(newClient)").async {
-                self.handleConnection(socket: newClient)
+        DispatchQueue(label: "server").async {
+            self.listeningSocket = ServerSocket(port: self.usingTLS ? self.httpsPort : self.httpPort, usingTLS: self.usingTLS)
+            while let newClient = self.listeningSocket?.acceptConnection() {
+                DispatchQueue(label: "client-\(newClient)").async {
+                    self.handleConnection(socket: newClient)
+                }
             }
         }
     }

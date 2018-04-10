@@ -1,7 +1,7 @@
 import Foundation
 import COpenSSL
 
-class SSLSocket: Socket {
+class ClientSSLSocket: ClientSocket {
     
     static var sslContext: UnsafeMutablePointer<SSL_CTX>?
     
@@ -9,11 +9,11 @@ class SSLSocket: Socket {
         SSL_load_error_strings();
         SSL_library_init();
         OpenSSL_add_all_digests();
-        SSLSocket.sslContext = SSL_CTX_new(TLSv1_2_server_method())
-        if SSL_CTX_use_certificate_file(SSLSocket.sslContext, certificateFile , SSL_FILETYPE_PEM) != 1 {
+        ClientSSLSocket.sslContext = SSL_CTX_new(TLSv1_2_server_method())
+        if SSL_CTX_use_certificate_file(ClientSSLSocket.sslContext, certificateFile , SSL_FILETYPE_PEM) != 1 {
             fatalError("Failed to use provided certificate file")
         }
-        if SSL_CTX_use_PrivateKey_file(SSLSocket.sslContext, privateKeyFile, SSL_FILETYPE_PEM) != 1 {
+        if SSL_CTX_use_PrivateKey_file(ClientSSLSocket.sslContext, privateKeyFile, SSL_FILETYPE_PEM) != 1 {
             fatalError("Failed to use provided preivate key file")
         }
     }
@@ -21,7 +21,7 @@ class SSLSocket: Socket {
     var sslSocket: UnsafeMutablePointer<SSL>
     
     override init(socketFD: Int32) {
-        sslSocket = SSL_new(SSLSocket.sslContext!);
+        sslSocket = SSL_new(ClientSSLSocket.sslContext!);
         super.init(socketFD: socketFD)
         
         SSL_set_fd(sslSocket, socketFileDescriptor);

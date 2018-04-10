@@ -1,6 +1,6 @@
 import Foundation
 
-class AcceptSocket: Socket {
+class ServerSocket: ClientSocket {
     
     #if os(Linux)
     static let socketStremType = Int32(SOCK_STREAM.rawValue)
@@ -21,7 +21,7 @@ class AcceptSocket: Socket {
     
     init(port: UInt16, usingTLS: Bool) {
         self.usingTLS = usingTLS
-        let listeningSocket = socket(AF_INET, AcceptSocket.socketStremType, 0)
+        let listeningSocket = socket(AF_INET, ServerSocket.socketStremType, 0)
         super.init(socketFD: listeningSocket)
         
         guard socketFileDescriptor >= 0 else { fatalError("Failed to initialize socket") }
@@ -34,7 +34,7 @@ class AcceptSocket: Socket {
         
         var addr = sockaddr_in()
         addr.sin_family = sa_family_t(AF_INET);
-        addr.sin_port = AcceptSocket.hostToNetworkByteOrder(port);
+        addr.sin_port = ServerSocket.hostToNetworkByteOrder(port);
         addr.sin_addr.s_addr = INADDR_ANY;
         var saddr = sockaddr()
         memcpy(&saddr, &addr, MemoryLayout<sockaddr_in>.size)
@@ -51,13 +51,13 @@ class AcceptSocket: Socket {
         close(socketFileDescriptor)
     }
     
-    func acceptConnection() -> Socket? {
+    func acceptConnection() -> ClientSocket? {
         let newConnectionFD = accept(socketFileDescriptor, nil, nil)
         guard newConnectionFD != -1 else { return nil }
         if usingTLS {
-            return SSLSocket(socketFD: newConnectionFD)
+            return ClientSSLSocket(socketFD: newConnectionFD)
         } else {
-            return Socket(socketFD: newConnectionFD)
+            return ClientSocket(socketFD: newConnectionFD)
         }
     }
 }

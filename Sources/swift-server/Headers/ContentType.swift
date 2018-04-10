@@ -1,24 +1,3 @@
-import Foundation
-
-let serverHeader = "Server: adrian-ensan-server"
-let locationHeader = "Location: "
-
-enum HTTPVersion {
-    case http1_0
-    case http1_1
-    case http2_0
-    
-    static let baseString = "HTTP/"
-    
-    var string: String {
-        switch self {
-        case .http1_0: return HTTPVersion.baseString + "1.0"
-        case .http1_1: return HTTPVersion.baseString + "1.1"
-        case .http2_0: return HTTPVersion.baseString + "2.0"
-        }
-    }
-}
-
 enum ContentType {
     case none
     case plain
@@ -76,37 +55,5 @@ enum ContentType {
     
     var string: String {
         return ContentType.baseString + typeString
-    }
-}
-
-enum Status {
-    case ok
-    case badRequest
-    case notFound
-    case movedPermanently
-    case internalServerError
-    
-    var statusCode: Int {
-        switch self {
-        case                  .ok: return 200
-        case          .badRequest: return 400
-        case            .notFound: return 404
-        case    .movedPermanently: return 301
-        case .internalServerError: return 500
-        }
-    }
-    
-    var statusDescription: String {
-        switch self {
-        case                  .ok: return "OK"
-        case          .badRequest: return "Bad Request"
-        case            .notFound: return "Not Found"
-        case    .movedPermanently: return "Moved Permanently"
-        case .internalServerError: return "Internal Server Error"
-        }
-    }
-    
-    var string: String {
-        return "\(statusCode) \(statusDescription)"
     }
 }

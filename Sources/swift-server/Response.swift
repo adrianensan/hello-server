@@ -9,9 +9,9 @@ class Response {
     var body: String = ""
     var omitBody: Bool = false
 
-    private var socket: Socket?
+    private var socket: ClientSocket?
     
-    init(clientSocket: Socket? = nil) {
+    init(clientSocket: ClientSocket? = nil) {
         socket = clientSocket
     }
     

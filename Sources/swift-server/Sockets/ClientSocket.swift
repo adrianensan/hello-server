@@ -1,6 +1,6 @@
 import Foundation
 
-class Socket {
+class ClientSocket {
     
     let acceptBacklog: Int32 = 20
     let bufferSize = 100 * 1024
