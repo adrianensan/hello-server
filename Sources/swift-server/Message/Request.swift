@@ -1,10 +1,10 @@
 import Foundation
 
-class Request: CustomStringConvertible {
+class Request: Message, CustomStringConvertible {
     
     var method: Method
     var url: String
-    var body: String?
+    var cookies: [String: String] = [String: String]()
     
     init(method: Method, url: String) {
         self.method = method
@@ -15,7 +15,7 @@ class Request: CustomStringConvertible {
         return
             """
             \(method) \(url)\n
-            \(body ?? "[No Body]")
+            \(body.count > 0 ? body : "[No Body]")
             """
     }
 }

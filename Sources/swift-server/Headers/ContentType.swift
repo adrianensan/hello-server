@@ -47,7 +47,7 @@ enum ContentType {
         case        .xml: return "application/xml"
         case        .pdf: return "application/pdf"
         case        .doc: return "application/msword"
-        case       .other: return "application/octet-stream"
+        case      .other: return "application/octet-stream"
         case       .docx: return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         case .custom(let s): return s
         }

@@ -1,18 +1,27 @@
 import Foundation
 
-class Response {
+class Response: Message, CustomStringConvertible {
     
     var httpVersion: HTTPVersion = .http1_1
     var status: Status = .ok
+    var cookies: [Cookie] = [Cookie]()
+    var customeHeaders: [String] = [String]()
     var contentType: ContentType = .none
     var location: String?
-    var body: String = ""
     var omitBody: Bool = false
 
     private var socket: ClientSocket?
     
     init(clientSocket: ClientSocket? = nil) {
         socket = clientSocket
+    }
+    
+    func add(cookie: Cookie) {
+        cookies.append(cookie)
+    }
+    
+    func addCustomHeader(_ line: String) {
+        customeHeaders.append(line.filterNewlines)
     }
     
     func setBodyJSON<T: Encodable>(object: T, append: Bool = false) {
@@ -31,21 +40,33 @@ class Response {
         socket = nil
     }
     
-    func toString() -> String {
+    var description: String {
         var string = ""
         string += httpVersion.string
         string += " "
         string += status.string
         string += "\r\n"
+        
+        if let location = location {
+            string += locationHeader + location
+            string += "\r\n"
+        }
+        
+        for cookie in cookies {
+            string += cookie.description
+            string += "\r\n"
+        }
+        
+        for customHeader in customeHeaders {
+            string += customHeader
+            string += "\r\n"
+        }
+        
         switch contentType {
         case .none:
             ()
         default:
             string += contentType.string
-            string += "\r\n"
-        }
-        if let location = location {
-            string += locationHeader + location
             string += "\r\n"
         }
         
@@ -54,8 +75,6 @@ class Response {
             string += "\r\n\r\n"
             string += body
         } else { string += "\r\n\r\n" }
-        
-
         
         return string
     }
