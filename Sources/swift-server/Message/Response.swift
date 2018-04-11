@@ -3,7 +3,7 @@ import Foundation
 class Response: Message, CustomStringConvertible {
     
     var httpVersion: HTTPVersion = .http1_1
-    var status: Status = .ok
+    var status: ResponseStatus = .ok
     var cookies: [Cookie] = [Cookie]()
     var customeHeaders: [String] = [String]()
     var contentType: ContentType = .none
@@ -44,7 +44,7 @@ class Response: Message, CustomStringConvertible {
         var string = ""
         string += httpVersion.string
         string += " "
-        string += status.string
+        string += status.description
         string += "\r\n"
         
         if let location = location {
@@ -66,7 +66,7 @@ class Response: Message, CustomStringConvertible {
         case .none:
             ()
         default:
-            string += contentType.string
+            string += contentType.description
             string += "\r\n"
         }
         

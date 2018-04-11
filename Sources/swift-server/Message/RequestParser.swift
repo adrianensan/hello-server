@@ -17,7 +17,6 @@ extension Request {
                             if name.count > 0 { request.cookies[name] = value }
                         }
                     }
-                    print(request.cookies)
                 }
             } else {
                 let segments = headerField.lowercased().split(separator: " ")

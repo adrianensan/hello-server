@@ -3,7 +3,6 @@ import Foundation
 struct Cookie: CustomStringConvertible {
     
     enum SameSiteType {
-        case none
         case strict
         case lax
         
@@ -11,7 +10,6 @@ struct Cookie: CustomStringConvertible {
             switch self {
             case .strict: return "Strict"
             case .lax: return "Lax"
-            default: return ""
             }
         }
     }
@@ -24,30 +22,30 @@ struct Cookie: CustomStringConvertible {
     private var path: String?
     private var secure: Bool
     private var httpOnly: Bool
-    private var sameSite: SameSiteType
+    private var sameSite: SameSiteType?
     private var customValues: [String]
     
     init(name: String, value: String,
          expiry: TimeInterval? = nil, maxAge: Double? = nil, domain: String?, path: String?,
-         httpOnly: Bool = false, secure: Bool = false, sameSite: SameSiteType = .none) {
+         httpOnly: Bool = false, secure: Bool = false, sameSite: SameSiteType? = nil) {
         self.name = name.filterNewlines
         self.value = value.filterNewlines
         self.expiry = expiry
         self.maxAge = maxAge
-        self.domain = domain
-        self.path = path
+        self.domain = domain?.filterNewlines
+        self.path = path?.filterNewlines
         self.secure = secure
         self.httpOnly = httpOnly
         self.sameSite = sameSite
         customValues = [String]()
     }
     
-    mutating func setName(_ val: String) { name = val }
-    mutating func setValue(_ val: String) { value = val }
+    mutating func setName(_ val: String) { name = val.filterNewlines }
+    mutating func setValue(_ val: String) { value = val.filterNewlines }
     mutating func setExpiry(timeIntervalSince1970: TimeInterval) { expiry = timeIntervalSince1970 }
     mutating func setMaxAge(seconds: Double) { maxAge = seconds }
-    mutating func setDomain(_ val: String) { domain = val }
-    mutating func setPath(_ val: String) { path = val }
+    mutating func setDomain(_ val: String) { domain = val.filterNewlines }
+    mutating func setPath(_ val: String) { path = val.filterNewlines }
     mutating func setSecure(_ val: Bool) { secure = val }
     mutating func setHTTPOnly(_ val: Bool) { httpOnly = val }
     mutating func setSameSite(_ val: SameSiteType) { sameSite = val }
@@ -62,7 +60,7 @@ struct Cookie: CustomStringConvertible {
         if let path = path { string += "Path=\(path)" }
         if httpOnly { string += "; HttpOnly)" }
         if secure { string += "; secure" }
-        if sameSite != .none { string += "; \(sameSite.description)" }
+        if let sameSite = sameSite { string += "; \(sameSite.description)" }
         for custom in customValues { string += "; \(custom)" }
         return string
     }

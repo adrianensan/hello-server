@@ -1,4 +1,4 @@
-enum ContentType {
+enum ContentType: CustomStringConvertible {
     case none
     case plain
     case html
@@ -53,7 +53,7 @@ enum ContentType {
         }
     }
     
-    var string: String {
+    var description: String {
         return ContentType.baseString + typeString
     }
 }
