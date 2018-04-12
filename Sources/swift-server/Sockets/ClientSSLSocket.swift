@@ -1,6 +1,30 @@
 import Foundation
 import COpenSSL
 
+func cb( _ sslSocket: UnsafeMutablePointer<SSL>?,
+               _ out: UnsafeMutablePointer<UnsafePointer<UInt8>?>?,
+            _ outlen: UnsafeMutablePointer<UInt8>?,
+_ supportedProtocols: UnsafePointer<UInt8>?,
+             _ inlen: UInt32,
+               _ arg: UnsafeMutableRawPointer?) -> Int32 {
+    if let supportedProtocols = supportedProtocols {
+        var data = [UInt8]()
+        for i in 0..<inlen {
+            data.append(supportedProtocols.advanced(by: Int(i)).pointee)
+        }
+        if let string = String(bytes: data, encoding: .utf8) {
+            if let desired = string.range(of: "http/1.1") {
+                let offset = string.distance(from: string.startIndex, to: desired.lowerBound)
+                out?.initialize(to: supportedProtocols.advanced(by: offset))
+                outlen?.initialize(to: 8)
+                return SSL_TLSEXT_ERR_OK
+            }
+            return SSL_TLSEXT_ERR_ALERT_FATAL
+        }
+    }
+    return SSL_TLSEXT_ERR_NOACK
+}
+
 class ClientSSLSocket: ClientSocket {
     
     static var sslContext: UnsafeMutablePointer<SSL_CTX>?
@@ -10,6 +34,7 @@ class ClientSSLSocket: ClientSocket {
         SSL_library_init();
         OpenSSL_add_all_digests();
         ClientSSLSocket.sslContext = SSL_CTX_new(TLSv1_2_server_method())
+        SSL_CTX_set_alpn_select_cb(sslContext, cb, nil)
         if SSL_CTX_use_certificate_file(ClientSSLSocket.sslContext, certificateFile , SSL_FILETYPE_PEM) != 1 {
             fatalError("Failed to use provided certificate file")
         }
