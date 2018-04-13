@@ -3,6 +3,8 @@ import Foundation
 
 class Server {
     
+    static let supportedHTTPVersions: [String] = ["http/1.1"]
+    
     static private func httpToHttpsRedirectServer() -> Server {
         let redirectServer = Server()
         redirectServer.shouldProvideStaticFiles = false

@@ -6,18 +6,20 @@ func cb( _ sslSocket: UnsafeMutablePointer<SSL>?,
             _ outlen: UnsafeMutablePointer<UInt8>?,
 _ supportedProtocols: UnsafePointer<UInt8>?,
              _ inlen: UInt32,
-               _ arg: UnsafeMutableRawPointer?) -> Int32 {
+              _ args: UnsafeMutableRawPointer?) -> Int32 {
     if let supportedProtocols = supportedProtocols {
         var data = [UInt8]()
         for i in 0..<inlen {
             data.append(supportedProtocols.advanced(by: Int(i)).pointee)
         }
         if let string = String(bytes: data, encoding: .utf8) {
-            if let desired = string.range(of: "http/1.1") {
-                let offset = string.distance(from: string.startIndex, to: desired.lowerBound)
-                out?.initialize(to: supportedProtocols.advanced(by: offset))
-                outlen?.initialize(to: 8)
-                return SSL_TLSEXT_ERR_OK
+            for httpVersion in Server.supportedHTTPVersions {
+                if let match = string.range(of: httpVersion) {
+                    let offset = string.distance(from: string.startIndex, to: match.lowerBound)
+                    out?.initialize(to: supportedProtocols.advanced(by: offset))
+                    outlen?.initialize(to: UInt8(httpVersion.count))
+                    return SSL_TLSEXT_ERR_OK
+                }
             }
             return SSL_TLSEXT_ERR_ALERT_FATAL
         }
