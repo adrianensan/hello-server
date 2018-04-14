@@ -1,8 +1,8 @@
 import Foundation
 
-struct Cookie: CustomStringConvertible {
+public struct Cookie: CustomStringConvertible {
     
-    enum SameSiteType {
+    public enum SameSiteType {
         case strict
         case lax
         
@@ -25,7 +25,7 @@ struct Cookie: CustomStringConvertible {
     private var sameSite: SameSiteType?
     private var customValues: [String]
     
-    init(name: String, value: String,
+    public init(name: String, value: String,
          expiry: TimeInterval? = nil, maxAge: Double? = nil, domain: String?, path: String?,
          httpOnly: Bool = false, secure: Bool = false, sameSite: SameSiteType? = nil) {
         self.name = name.filterNewlines
@@ -40,18 +40,18 @@ struct Cookie: CustomStringConvertible {
         customValues = [String]()
     }
     
-    mutating func setName(_ val: String) { name = val.filterNewlines }
-    mutating func setValue(_ val: String) { value = val.filterNewlines }
-    mutating func setExpiry(timeIntervalSince1970: TimeInterval) { expiry = timeIntervalSince1970 }
-    mutating func setMaxAge(seconds: Double) { maxAge = seconds }
-    mutating func setDomain(_ val: String) { domain = val.filterNewlines }
-    mutating func setPath(_ val: String) { path = val.filterNewlines }
-    mutating func setSecure(_ val: Bool) { secure = val }
-    mutating func setHTTPOnly(_ val: Bool) { httpOnly = val }
-    mutating func setSameSite(_ val: SameSiteType) { sameSite = val }
-    mutating func addCustom(_ value: String) { customValues.append(value.filterNewlines) }
+    mutating public func setName(_ val: String) { name = val.filterNewlines }
+    mutating public func setValue(_ val: String) { value = val.filterNewlines }
+    mutating public func setExpiry(timeIntervalSince1970: TimeInterval) { expiry = timeIntervalSince1970 }
+    mutating public func setMaxAge(seconds: Double) { maxAge = seconds }
+    mutating public func setDomain(_ val: String) { domain = val.filterNewlines }
+    mutating public func setPath(_ val: String) { path = val.filterNewlines }
+    mutating public func setSecure(_ val: Bool) { secure = val }
+    mutating public func setHTTPOnly(_ val: Bool) { httpOnly = val }
+    mutating public func setSameSite(_ val: SameSiteType) { sameSite = val }
+    mutating public func addCustom(_ value: String) { customValues.append(value.filterNewlines) }
     
-    var description: String {
+    public var description: String {
         var string: String = Header.setCookieHeader
         string += "\(name)=\(value)"
         if let expiry = expiry { string += "Expiry=\(Header.httpDateFormater.string(from: Date(timeIntervalSince1970: expiry)))" }

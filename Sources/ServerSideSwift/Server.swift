@@ -1,7 +1,7 @@
 import Dispatch
 import Foundation
 
-class Server {
+public class Server {
     
     static let supportedHTTPVersions: [String] = ["http/1.1"]
     
@@ -22,19 +22,20 @@ class Server {
         return redirectServer
     }
 
-    var serverName: String = ""
-    var serverAddress: String?
-    var httpPort: UInt16 = 80
-    var httpsPort: UInt16 = 443
-    var staticDocumentRoot: String = "./static"
-    var shouldRedirectHttpToHttps: Bool = false
-    var shouldProvideStaticFiles: Bool = true
+    public var serverName: String = ""
+    public var serverAddress: String?
+    public var httpPort: UInt16 = 80
+    public var httpsPort: UInt16 = 443
+    public var staticDocumentRoot: String = "./static"
+    public var shouldRedirectHttpToHttps: Bool = false
+    public var shouldProvideStaticFiles: Bool = true
+    
     var handlers = [(method: Method, url: String, handler: (request: Request, response: Response) -> Void)]()
     
     private var usingTLS = false
     private var listeningSocket: ServerSocket?
     
-    init() {
+    public init() {
         
     }
     
@@ -57,7 +58,7 @@ class Server {
         return nil
     }
     
-    func useTLS(certificateFile: String, privateKeyFile: String) {
+    public func useTLS(certificateFile: String, privateKeyFile: String) {
         ClientSSLSocket.initSSLContext(certificateFile: certificateFile, privateKeyFile: privateKeyFile)
         usingTLS = true
     }
@@ -91,7 +92,7 @@ class Server {
         }
     }
     
-    func start() {
+    public func start() {
         if shouldRedirectHttpToHttps {
             DispatchQueue(label: "redirectServer").async {
                 Server.httpToHttpsRedirectServer().start()

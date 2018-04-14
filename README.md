@@ -1,3 +1,3 @@
-# swift-server
+# ServerSideSwift
 
 A description of this package.

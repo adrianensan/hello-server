@@ -2,11 +2,8 @@
 import PackageDescription
 
 let package = Package(
-    name: "swift-server",
-    dependencies: [
-        .package(url: "https://github.com/PerfectlySoft/Perfect-COpenSSL", from: "3.0.0")
-    ],
-    targets: [
-        .target(name: "swift-server", dependencies: ["COpenSSL"])
-    ]
+    name: "ServerSideSwift",
+    products: [.library(name:"ServerSideSwift", targets: ["ServerSideSwift"])],
+    dependencies: [.package(url: "https://github.com/PerfectlySoft/Perfect-COpenSSL", from: "3.0.0")],
+    targets: [.target(name: "ServerSideSwift", dependencies: ["COpenSSL"])]
 )

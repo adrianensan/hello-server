@@ -1,14 +1,14 @@
 import Foundation
 
-class Response: Message, CustomStringConvertible {
+public class Response: Message, CustomStringConvertible {
     
     var httpVersion: HTTPVersion = .http1_1
-    var status: ResponseStatus = .ok
+    public var status: ResponseStatus = .ok
     var cookies: [Cookie] = [Cookie]()
     var customeHeaders: [String] = [String]()
-    var contentType: ContentType = .none
-    var location: String?
-    var omitBody: Bool = false
+    public var contentType: ContentType = .none
+    public var location: String?
+    public var omitBody: Bool = false
 
     private var socket: ClientSocket?
     
@@ -16,15 +16,15 @@ class Response: Message, CustomStringConvertible {
         socket = clientSocket
     }
     
-    func add(cookie: Cookie) {
+    public func add(cookie: Cookie) {
         cookies.append(cookie)
     }
     
-    func addCustomHeader(_ line: String) {
+    public func addCustomHeader(_ line: String) {
         customeHeaders.append(line.filterNewlines)
     }
     
-    func setBodyJSON<T: Encodable>(object: T, append: Bool = false) {
+    public func setBodyJSON<T: Encodable>(object: T, append: Bool = false) {
         if let json = try? JSONEncoder().encode(object),
             let jsonString = String(data: json, encoding: String.Encoding.utf8) {
             if append {
@@ -35,14 +35,14 @@ class Response: Message, CustomStringConvertible {
         }
     }
     
-    func complete() {
+    public func complete() {
         if let socket = socket { socket.sendResponse(self) }
         socket = nil
     }
     
-    var description: String {
+    public var description: String {
         var string = ""
-        string += httpVersion.string
+        string += httpVersion.description
         string += " "
         string += status.description
         string += "\r\n"

@@ -1,5 +1,5 @@
 import Foundation
 
-class Message {
+public class Message {
     var body: String = ""
 }

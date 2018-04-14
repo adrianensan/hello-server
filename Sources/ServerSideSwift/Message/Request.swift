@@ -1,17 +1,17 @@
 import Foundation
 
-class Request: Message, CustomStringConvertible {
+public class Request: Message, CustomStringConvertible {
     
-    var method: Method
-    var url: String
-    var cookies: [String: String] = [String: String]()
+    public internal(set) var method: Method
+    public internal(set) var url: String
+    public internal(set) var cookies: [String: String] = [String: String]()
     
     init(method: Method, url: String) {
         self.method = method
         self.url = url
     }
     
-    var description: String {
+    public var description: String {
         return
             """
             \(method) \(url)\n

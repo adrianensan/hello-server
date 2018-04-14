@@ -1,4 +1,4 @@
-enum ResponseStatus: CustomStringConvertible {
+public enum ResponseStatus: CustomStringConvertible {
     case `continue`
     case switchingProtocols
     case ok
@@ -41,7 +41,7 @@ enum ResponseStatus: CustomStringConvertible {
     case httpVersionNotSupported
     case custom(code: Int, message: String)
     
-    var statusCode: Int {
+    public var statusCode: Int {
         switch self {
         case                     .continue: return 100
         case           .switchingProtocols: return 101
@@ -87,7 +87,7 @@ enum ResponseStatus: CustomStringConvertible {
         }
     }
     
-    var statusDescription: String {
+    public var statusDescription: String {
         switch self {
         case                     .continue: return "Continue"
         case           .switchingProtocols: return "Switching Protocols"
@@ -179,7 +179,7 @@ enum ResponseStatus: CustomStringConvertible {
         }
     }
     
-    var description: String {
+    public var description: String {
         return "\(statusCode) \(statusDescription)"
     }
 }

@@ -1,4 +1,4 @@
-enum Method {
+public enum Method {
     case get
     case head
     case post
