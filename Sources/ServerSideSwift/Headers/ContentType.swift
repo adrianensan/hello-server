@@ -51,8 +51,9 @@ public enum ContentType: CustomStringConvertible {
         }
     }
     
-    static func from(fileExtension: String) -> ContentType{
+    static func from(fileExtension: String) -> ContentType {
         switch fileExtension {
+        case            "": return .none
         case         "txt": return .plain
         case        "html": return .html
         case         "css": return .css

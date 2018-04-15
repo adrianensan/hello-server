@@ -36,7 +36,7 @@ public class Server {
     var endpoints = [(method: Method, url: String, handler: (request: Request, response: Response) -> Void)]()
     
     private var usingTLS = false
-    private var documentRoot: String = CommandLine.arguments[0] + "static"
+    private var documentRoot: String = /*CommandLine.arguments[0] +*/ "./static"
     private var listeningSocket: ServerSocket?
     
     public init() {}
@@ -66,18 +66,28 @@ public class Server {
     }
     
     func staticFileHandler(request: Request, response: Response) {
-        if let file = try? String(contentsOf: URL(fileURLWithPath: staticDocumentRoot + request.url), encoding: .utf8) {
-            let fileExtension = URL(fileURLWithPath: staticDocumentRoot + request.url).deletingPathExtension().lastPathComponent
+        var url = staticDocumentRoot + request.url
+        
+        if let file = try? String(contentsOf: URL(fileURLWithPath: url), encoding: .utf8) {
+            var fileExtension = ""
+            let splits = url.split(separator: "/", omittingEmptySubsequences: true)
+            if splits.count > 0 {
+                let fileName = splits[splits.count - 1]
+                if let firstDot = fileName.range(of: ".") { fileExtension = String(fileName[firstDot.upperBound...]) }
+            }
             print(fileExtension)
             response.body = file
             response.contentType = .from(fileExtension: fileExtension)
-        } else if let file = try? String(contentsOf: URL(fileURLWithPath: staticDocumentRoot + request.url + "index.html"), encoding: .utf8) {
-            response.body = file
-            response.contentType = .html
         } else {
-            response.status = .notFound
-            response.body = notFoundPage
-            response.contentType = .html
+            if url.last ?? " " != "/" { url += "/" }
+            if let file = try? String(contentsOf: URL(fileURLWithPath: url + "index.html"), encoding: .utf8) {
+                response.body = file
+                response.contentType = .html
+            } else {
+                response.status = .notFound
+                response.body = notFoundPage
+                response.contentType = .html
+            }
         }
         
         response.complete()
