@@ -5,17 +5,18 @@ public class Server {
     
     static let supportedHTTPVersions: [String] = ["http/1.1"]
     
-    static private func httpToHttpsRedirectServer() -> Server {
-        let redirectServer = Server()
+    public enum ConnectionHandling {
+        case acceptAll
+        case acceptMatchingHost
+        case redirectNonMatchingHostToHost
+    }
+    
+    static private func httpToHttpsRedirectServer(host: String) -> Server {
+        let redirectServer = Server(host: host)
         redirectServer.shouldProvideStaticFiles = false
-        redirectServer.serverAddress = "adrianensan.me"
         redirectServer.addEndpoint(method: .any, url: "*", handler: {request, response in
             response.status = .movedPermanently
-            if let serverAddress = redirectServer.serverAddress {
-                response.location = "https://" + serverAddress + request.url
-            } else {
-                fatalError("serverAddress needs to be set in order to redirect http traffic to https")
-            }
+            response.location = "https://" + host + request.url
             response.complete()
         })
         
@@ -23,23 +24,26 @@ public class Server {
     }
 
     public var serverName: String = ""
-    public var serverAddress: String?
     public var httpPort: UInt16 = 80
     public var httpsPort: UInt16 = 443
     public var staticDocumentRoot: String {
         get { return documentRoot }
         set { documentRoot = CommandLine.arguments[0] + newValue }
     }
+    public var connectionHandling: ConnectionHandling = .acceptAll
     public var shouldRedirectHttpToHttps: Bool = false
     public var shouldProvideStaticFiles: Bool = true
     
     var endpoints = [(method: Method, url: String, handler: (request: Request, response: Response) -> Void)]()
     
+    private var host: String
     private var usingTLS = false
     private var documentRoot: String = /*CommandLine.arguments[0] +*/ "./static"
     private var listeningSocket: ServerSocket?
     
-    public init() {}
+    public init(host: String) {
+        self.host = host
+    }
     
     public func useTLS(certificateFile: String, privateKeyFile: String) {
         ClientSSLSocket.initSSLContext(certificateFile: certificateFile, privateKeyFile: privateKeyFile)
@@ -75,7 +79,6 @@ public class Server {
                 let fileNameSplits = fileName.split(separator: ".")
                 if let potentialExtension = fileNameSplits.last { fileExtension = String(potentialExtension) }
             }
-            print(fileExtension)
             response.body = file
             response.contentType = .from(fileExtension: fileExtension)
         } else {
@@ -111,17 +114,8 @@ public class Server {
     
     public func start() {
         if shouldRedirectHttpToHttps {
-            DispatchQueue(label: "redirectServer").async {
-                Server.httpToHttpsRedirectServer().start()
-            }
+            //Router.addServer(host: host, port: httpPort, usingTLS: false, server: Server.httpToHttpsRedirectServer(host: host))
         }
-        DispatchQueue(label: "server").async {
-            self.listeningSocket = ServerSocket(port: self.usingTLS ? self.httpsPort : self.httpPort, usingTLS: self.usingTLS)
-            while let newClient = self.listeningSocket?.acceptConnection() {
-                DispatchQueue(label: "client-\(newClient)").async {
-                    self.handleConnection(socket: newClient)
-                }
-            }
-        }
+        Router.addServer(host: host, port: self.usingTLS ? self.httpsPort : self.httpPort, usingTLS: usingTLS, server: self)
     }
 }
