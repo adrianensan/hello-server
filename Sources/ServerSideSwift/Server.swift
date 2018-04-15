@@ -26,7 +26,7 @@ public class Server {
     public var serverAddress: String?
     public var httpPort: UInt16 = 80
     public var httpsPort: UInt16 = 443
-    public var staticDocumentRoot: String = "./static"
+    public var staticDocumentRoot: String = CommandLine.arguments[0] + "./static"
     public var shouldRedirectHttpToHttps: Bool = false
     public var shouldProvideStaticFiles: Bool = true
     
