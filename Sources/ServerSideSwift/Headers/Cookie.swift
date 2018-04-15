@@ -42,8 +42,14 @@ public struct Cookie: CustomStringConvertible {
     
     mutating public func setName(_ val: String) { name = val.filterNewlines }
     mutating public func setValue(_ val: String) { value = val.filterNewlines }
-    mutating public func setExpiry(timeIntervalSince1970: TimeInterval) { expiry = timeIntervalSince1970 }
-    mutating public func setMaxAge(seconds: Double) { maxAge = seconds }
+    mutating public func setExpiry(timeIntervalSince1970: TimeInterval) {
+        expiry = timeIntervalSince1970
+        maxAge = timeIntervalSince1970 - Date().timeIntervalSince1970
+    }
+    mutating public func setExpiry(secondsFromNow: Double) {
+        expiry = Date().timeIntervalSince1970 + secondsFromNow
+        maxAge = secondsFromNow
+    }
     mutating public func setDomain(_ val: String) { domain = val.filterNewlines }
     mutating public func setPath(_ val: String) { path = val.filterNewlines }
     mutating public func setSecure(_ val: Bool) { secure = val }
