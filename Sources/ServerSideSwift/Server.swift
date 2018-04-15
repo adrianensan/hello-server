@@ -9,7 +9,7 @@ public class Server {
         let redirectServer = Server()
         redirectServer.shouldProvideStaticFiles = false
         redirectServer.serverAddress = "adrianensan.me"
-        redirectServer.addHandler(method: .any, url: "*", handler: {request, response in
+        redirectServer.addEndpoint(method: .any, url: "*", handler: {request, response in
             response.status = .movedPermanently
             if let serverAddress = redirectServer.serverAddress {
                 response.location = "https://" + serverAddress + request.url
@@ -26,25 +26,32 @@ public class Server {
     public var serverAddress: String?
     public var httpPort: UInt16 = 80
     public var httpsPort: UInt16 = 443
-    public var staticDocumentRoot: String = "./static"
+    public var staticDocumentRoot: String {
+        get { return documentRoot }
+        set { documentRoot = CommandLine.arguments[0] + newValue }
+    }
     public var shouldRedirectHttpToHttps: Bool = false
     public var shouldProvideStaticFiles: Bool = true
     
-    var handlers = [(method: Method, url: String, handler: (request: Request, response: Response) -> Void)]()
+    var endpoints = [(method: Method, url: String, handler: (request: Request, response: Response) -> Void)]()
     
     private var usingTLS = false
+    private var documentRoot: String = CommandLine.arguments[0] + "static"
     private var listeningSocket: ServerSocket?
     
-    public init() {
-        
+    public init() {}
+    
+    public func useTLS(certificateFile: String, privateKeyFile: String) {
+        ClientSSLSocket.initSSLContext(certificateFile: certificateFile, privateKeyFile: privateKeyFile)
+        usingTLS = true
     }
     
-    func addHandler(method: Method, url: String, handler: @escaping (Request, Response) -> Void) {
-        handlers.append((method: method, url: url, handler: handler))
+    func addEndpoint(method: Method, url: String, handler: @escaping (Request, Response) -> Void) {
+        endpoints.append((method: method, url: url, handler: handler))
     }
     
     func getHandlerFor(method: Method, url: String) -> ((Request, Response) -> Void)? {
-        for handler in handlers {
+        for handler in endpoints {
             if handler.method == .any || handler.method == method {
                 if let end = handler.url.index(of: "*") {
                     if url.starts(with: handler.url[..<end]) {
@@ -58,22 +65,22 @@ public class Server {
         return nil
     }
     
-    public func useTLS(certificateFile: String, privateKeyFile: String) {
-        ClientSSLSocket.initSSLContext(certificateFile: certificateFile, privateKeyFile: privateKeyFile)
-        usingTLS = true
-    }
-    
     func staticFileHandler(request: Request, response: Response) {
-        if let file = try? String(contentsOf: URL(fileURLWithPath: staticDocumentRoot + request.url + "index.html"), encoding: .utf8) {
+        if let file = try? String(contentsOf: URL(fileURLWithPath: staticDocumentRoot + request.url), encoding: .utf8) {
+            let fileExtension = URL(fileURLWithPath: staticDocumentRoot + request.url).deletingPathExtension().lastPathComponent
+            print(fileExtension)
+            response.body = file
+            response.contentType = .from(fileExtension: fileExtension)
+        } else if let file = try? String(contentsOf: URL(fileURLWithPath: staticDocumentRoot + request.url + "index.html"), encoding: .utf8) {
             response.body = file
             response.contentType = .html
-            response.complete()
         } else {
-            response.body = "Not Found"
             response.status = .notFound
+            response.body = notFoundPage
             response.contentType = .html
-            response.complete()
         }
+        
+        response.complete()
     }
     
     func handleConnection(socket: ClientSocket) {

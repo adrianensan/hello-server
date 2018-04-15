@@ -9,9 +9,7 @@ public enum ContentType: CustomStringConvertible {
     case woff
     case woff2
     case png
-    case jpg
     case jpeg
-    case tif
     case tiff
     case gif
     case svg
@@ -38,8 +36,8 @@ public enum ContentType: CustomStringConvertible {
         case       .woff: return "font/woff"
         case      .woff2: return "font/woff2"
         case        .png: return "image/png"
-        case .jpg, .jpeg: return "image/jpeg"
-        case .tif, .tiff: return "image/tiff"
+        case       .jpeg: return "image/jpeg"
+        case       .tiff: return "image/tiff"
         case        .gif: return "image/gif"
         case        .svg: return "image/svg+xml"
         case        .ico: return "image/x-icon"
@@ -47,9 +45,34 @@ public enum ContentType: CustomStringConvertible {
         case        .xml: return "application/xml"
         case        .pdf: return "application/pdf"
         case        .doc: return "application/msword"
-        case      .other: return "application/octet-stream"
         case       .docx: return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        case      .other: return "application/octet-stream"
         case .custom(let s): return s
+        }
+    }
+    
+    static func from(fileExtension: String) -> ContentType{
+        switch fileExtension {
+        case         "txt": return .plain
+        case        "html": return .html
+        case         "css": return .css
+        case          "js": return .js
+        case         "otf": return .otf
+        case         "ttf": return .ttf
+        case        "woff": return .woff
+        case       "woff2": return .woff2
+        case         "png": return .png
+        case "jpeg", "jpg": return .jpeg
+        case "tiff", "tif": return .tiff
+        case         "gif": return .gif
+        case         "svg": return .svg
+        case         "ico": return .ico
+        case        "json": return .json
+        case         "xml": return .xml
+        case         "pdf": return .pdf
+        case         "doc": return .doc
+        case        "docx": return .docx
+                   default: return .other
         }
     }
     

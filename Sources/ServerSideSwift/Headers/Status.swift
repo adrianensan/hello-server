@@ -179,6 +179,13 @@ public enum ResponseStatus: CustomStringConvertible {
         }
     }
     
+    var defaultPage: String? {
+        switch self {
+        case .notFound: return notFoundPage
+        default: return nil
+        }
+    }
+    
     public var description: String {
         return "\(statusCode) \(statusDescription)"
     }
