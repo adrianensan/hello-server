@@ -71,9 +71,9 @@ public class Server {
         if let file = try? String(contentsOf: URL(fileURLWithPath: url), encoding: .utf8) {
             var fileExtension = ""
             let splits = url.split(separator: "/", omittingEmptySubsequences: true)
-            if splits.count > 0 {
-                let fileName = splits[splits.count - 1]
-                if let firstDot = fileName.range(of: ".") { fileExtension = String(fileName[firstDot.upperBound...]) }
+            if let fileName = splits.last {
+                let fileNameSplits = fileName.split(separator: ".")
+                if let potentialExtension = fileNameSplits.last { fileExtension = String(potentialExtension) }
             }
             print(fileExtension)
             response.body = file
