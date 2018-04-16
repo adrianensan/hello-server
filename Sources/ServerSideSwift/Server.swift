@@ -1,5 +1,6 @@
 import Dispatch
 import Foundation
+import COpenSSL
 
 public class Server {
     
@@ -41,12 +42,28 @@ public class Server {
     private var documentRoot: String = /*CommandLine.arguments[0] +*/ "./static"
     private var listeningSocket: ServerSocket?
     
+    private var sslContext: UnsafeMutablePointer<SSL_CTX>!
+    
+    private func initSSLContext(certificateFile: String, privateKeyFile: String) {
+        SSL_load_error_strings();
+        SSL_library_init();
+        OpenSSL_add_all_digests();
+        sslContext = SSL_CTX_new(TLSv1_2_server_method())
+        SSL_CTX_set_alpn_select_cb(sslContext, cb, nil)
+        if SSL_CTX_use_certificate_file(sslContext, certificateFile , SSL_FILETYPE_PEM) != 1 {
+            fatalError("Failed to use provided certificate file")
+        }
+        if SSL_CTX_use_PrivateKey_file(sslContext, privateKeyFile, SSL_FILETYPE_PEM) != 1 {
+            fatalError("Failed to use provided preivate key file")
+        }
+    }
+    
     public init(host: String) {
         self.host = host
     }
     
     public func useTLS(certificateFile: String, privateKeyFile: String) {
-        ClientSSLSocket.initSSLContext(certificateFile: certificateFile, privateKeyFile: privateKeyFile)
+        initSSLContext(certificateFile: certificateFile, privateKeyFile: privateKeyFile)
         usingTLS = true
     }
     
@@ -97,6 +114,7 @@ public class Server {
     }
     
     func handleConnection(socket: ClientSocket) {
+        if let socket = socket as? ClientSSLSocket { socket.initSSLConnection(sslContext: sslContext) }
         while let request = socket.acceptRequest() {
             let response = Response(clientSocket: socket)
             if request.method == .head {
@@ -114,7 +132,7 @@ public class Server {
     
     public func start() {
         if shouldRedirectHttpToHttps {
-            //Router.addServer(host: host, port: httpPort, usingTLS: false, server: Server.httpToHttpsRedirectServer(host: host))
+            Router.addServer(host: host, port: httpPort, usingTLS: false, server: Server.httpToHttpsRedirectServer(host: host))
         }
         Router.addServer(host: host, port: self.usingTLS ? self.httpsPort : self.httpPort, usingTLS: usingTLS, server: self)
     }

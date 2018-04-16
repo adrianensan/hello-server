@@ -8,20 +8,23 @@ class Router {
     
     static func addServer(host: String, port: UInt16, usingTLS: Bool, server: Server) {
         if Router.listeningPorts[port] == nil {
-            routingTable[":\(port)"] = server
-            DispatchQueue(label: "serverOnPort:\(port)").async {
-                Router.listeningPorts[port] = ServerSocket(port: port, usingTLS: false)
+            DispatchQueue(label: "listeningSocket-\(port)").async {
+                Router.listeningPorts[port] = ServerSocket(port: port, usingTLS: usingTLS)
                 while let newClient = Router.listeningPorts[port]?.acceptConnection() {
                     DispatchQueue(label: "client-\(newClient)").async {
-                        if let newClient = newClient as? ClientSocket,
-                            let clientHello = newClient.peak() {
-                            let requestedHost = getHost(clientHello: clientHello)
-                            print(requestedHost)
-                            if let server = routingTable["\(requestedHost):\(port)"] {
-                                
-                            } else if let server = routingTable[":\(port)"] {
-                                
+                        var requestedHost = ""
+                        if let newClient = newClient as? ClientSSLSocket, let clientHello = newClient.peakRawData() {
+                                requestedHost = getHost(clientHello: clientHello)
+                        } else {
+                            if let firstPacket = newClient.peakPacket() {
+                                requestedHost = firstPacket.host ?? ""
                             }
+                        }
+                        
+                        if let server = routingTable["\(requestedHost):\(port)"] {
+                            server.handleConnection(socket: newClient)
+                        } else if let server = routingTable[":\(port)"] {
+                            server.handleConnection(socket: newClient)
                         }
                     }
                 }
@@ -29,6 +32,7 @@ class Router {
         }
         
         routingTable["\(host):\(port)"] = server
+        if server.connectionHandling == .acceptAll && routingTable[":\(port)"] == nil { routingTable[":\(port)"] = server }
     }
     
     static func convertToInt(bytes: [UInt8]) -> Int {
@@ -74,7 +78,6 @@ class Router {
         
         while clientHello.count > pos + 8 { // Extensions
             let extensionType = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
-            print(clientHello[pos..<(pos + 2)])
             pos += 2
             let extensionLength = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
             pos += 2
