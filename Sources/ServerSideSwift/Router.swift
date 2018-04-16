@@ -8,17 +8,15 @@ class Router {
     
     static func addServer(host: String, port: UInt16, usingTLS: Bool, server: Server) {
         if Router.listeningPorts[port] == nil {
+            Router.listeningPorts[port] = ServerSocket(port: port, usingTLS: usingTLS)
             DispatchQueue(label: "listeningSocket-\(port)").async {
-                Router.listeningPorts[port] = ServerSocket(port: port, usingTLS: usingTLS)
                 while let newClient = Router.listeningPorts[port]?.acceptConnection() {
                     DispatchQueue(label: "client-\(newClient)").async {
                         var requestedHost = ""
                         if let newClient = newClient as? ClientSSLSocket, let clientHello = newClient.peakRawData() {
-                                requestedHost = getHost(clientHello: clientHello)
-                        } else {
-                            if let firstPacket = newClient.peakPacket() {
-                                requestedHost = firstPacket.host ?? ""
-                            }
+                            requestedHost = getHost(clientHello: clientHello)
+                        } else if let firstPacket = newClient.peakPacket() {
+                            requestedHost = firstPacket.host ?? ""
                         }
                         
                         if let server = routingTable["\(requestedHost):\(port)"] {
@@ -56,25 +54,18 @@ class Router {
         pos += 32 // Random
         
         if clientHello.count > pos + 1 { // SessionID
-            pos += Int(clientHello[pos])
-            pos += 1
+            pos += 1 + Int(clientHello[pos])
         }
         
         if clientHello.count > pos + 2 { // CipherSuite
-            pos += convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
-            pos += 2
+            pos += 2 + convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
         }
         
         if clientHello.count > pos + 1 { // Compression
-            pos += Int(clientHello[pos])
-            pos += 1
+            pos += 1 + Int(clientHello[pos])
         }
         
-        if clientHello.count > pos + 2 { // Extensions
-            let data = Data(bytes: clientHello[pos..<(pos + 2)])
-            let value = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
-            pos += 2
-        }
+        pos += 2 // Extensions
         
         while clientHello.count > pos + 8 { // Extensions
             let extensionType = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
