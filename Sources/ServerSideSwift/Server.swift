@@ -12,9 +12,11 @@ public class Server {
         case redirectNonMatchingHostToHost
     }
     
-    static private func httpToHttpsRedirectServer(host: String) -> Server {
+    private func httpToHttpsRedirectServer(host: String,
+                                           connectionHandling: ConnectionHandling) -> Server {
         let redirectServer = Server(host: host)
         redirectServer.shouldProvideStaticFiles = false
+        redirectServer.connectionHandling = connectionHandling
         redirectServer.addEndpoint(method: .any, url: "*", handler: {request, response in
             response.status = .movedPermanently
             response.location = "https://" + host + request.url
@@ -29,18 +31,16 @@ public class Server {
     public var httpsPort: UInt16 = 443
     public var staticDocumentRoot: String {
         get { return documentRoot }
-        set { documentRoot = CommandLine.arguments[0] + newValue }
+        set { documentRoot = /*CommandLine.arguments[0] +*/ newValue }
     }
     public var connectionHandling: ConnectionHandling = .acceptAll
     public var shouldRedirectHttpToHttps: Bool = false
     public var shouldProvideStaticFiles: Bool = true
     
-    var endpoints = [(method: Method, url: String, handler: (request: Request, response: Response) -> Void)]()
-    
     private var host: String
     private var usingTLS = false
     private var documentRoot: String = /*CommandLine.arguments[0] +*/ "./static"
-    private var listeningSocket: ServerSocket?
+    private var endpoints = [(method: Method, url: String, handler: (request: Request, response: Response) -> Void)]()
     
     private var sslContext: UnsafeMutablePointer<SSL_CTX>!
     
@@ -132,7 +132,7 @@ public class Server {
     
     public func start() {
         if shouldRedirectHttpToHttps {
-            Router.addServer(host: host, port: httpPort, usingTLS: false, server: Server.httpToHttpsRedirectServer(host: host))
+            Router.addServer(host: host, port: httpPort, usingTLS: false, server: httpToHttpsRedirectServer(host: host, connectionHandling: connectionHandling))
         }
         Router.addServer(host: host, port: self.usingTLS ? self.httpsPort : self.httpPort, usingTLS: usingTLS, server: self)
     }

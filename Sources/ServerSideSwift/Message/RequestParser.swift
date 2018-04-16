@@ -9,7 +9,6 @@ extension Request {
             if let request = request {
                 if headerField.starts(with: "Host: ") {
                     request.host = headerField.split(separator: ":", maxSplits: 1)[1].trimmingCharacters(in: .whitespaces)
-                    
                 } else if headerField.starts(with: Header.cookieHeader) {
                     let cookies = headerField.split(separator: ":", maxSplits: 1)[1].split(separator: ";")
                     for cookieAttribute in cookies {
