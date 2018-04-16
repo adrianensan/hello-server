@@ -29,28 +29,14 @@ _ supportedProtocols: UnsafePointer<UInt8>?,
 
 class ClientSSLSocket: ClientSocket {
     
-    static var sslContext: UnsafeMutablePointer<SSL_CTX>?
-    
-    static func initSSLContext(certificateFile: String, privateKeyFile: String) {
-        SSL_load_error_strings();
-        SSL_library_init();
-        OpenSSL_add_all_digests();
-        ClientSSLSocket.sslContext = SSL_CTX_new(TLSv1_2_server_method())
-        SSL_CTX_set_alpn_select_cb(sslContext, cb, nil)
-        if SSL_CTX_use_certificate_file(ClientSSLSocket.sslContext, certificateFile , SSL_FILETYPE_PEM) != 1 {
-            fatalError("Failed to use provided certificate file")
-        }
-        if SSL_CTX_use_PrivateKey_file(ClientSSLSocket.sslContext, privateKeyFile, SSL_FILETYPE_PEM) != 1 {
-            fatalError("Failed to use provided preivate key file")
-        }
-    }
-    
-    var sslSocket: UnsafeMutablePointer<SSL>
+    var sslSocket: UnsafeMutablePointer<SSL>!
     
     override init(socketFD: Int32) {
-        sslSocket = SSL_new(ClientSSLSocket.sslContext!);
         super.init(socketFD: socketFD)
-        
+    }
+    
+    func initSSLConnection(sslContext: UnsafeMutablePointer<SSL_CTX>) {
+        sslSocket = SSL_new(sslContext);
         SSL_set_fd(sslSocket, socketFileDescriptor);
         let ssl_err = SSL_accept(sslSocket);
         if ssl_err <= 0 { close(socketFileDescriptor) }
@@ -77,5 +63,4 @@ class ClientSSLSocket: ClientSocket {
             }
         }
     }
-    
 }
