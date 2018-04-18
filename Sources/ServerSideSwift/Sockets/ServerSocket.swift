@@ -54,8 +54,25 @@ class ServerSocket: Socket {
     }
     
     func acceptConnection() -> ClientSocket? {
-        let newConnectionFD = accept(socketFileDescriptor, nil, nil)
+        var clientAddrressStruct = sockaddr()
+        var clientAddressLength = socklen_t()
+        let newConnectionFD = accept(socketFileDescriptor, &clientAddrressStruct, &clientAddressLength)
         guard newConnectionFD != -1 else { return nil }
+        
+        var clientAddress = [Int8](repeating: 0, count: Int(INET_ADDRSTRLEN))
+        switch clientAddrressStruct.sa_family {
+        case sa_family_t(AF_INET):
+            var ipv4 = sockaddr_in()
+            memcpy(&ipv4, &clientAddrressStruct, MemoryLayout<sockaddr_in>.size)
+            inet_ntop(AF_INET, &(ipv4.sin_addr), &clientAddress, socklen_t(INET_ADDRSTRLEN));
+        case sa_family_t(AF_INET6):
+            clientAddress = []
+        default: ()
+        }
+        
+        print(clientAddress)
+        
+        
         if usingTLS {
             return ClientSSLSocket(socketFD: newConnectionFD)
         } else {

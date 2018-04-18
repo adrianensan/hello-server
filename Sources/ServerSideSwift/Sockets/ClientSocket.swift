@@ -2,6 +2,8 @@ import Foundation
 
 class ClientSocket: Socket  {
     
+    var ipAddress: String?
+    
     func peakRawData() -> [UInt8]? {
         var requestBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
         while true {
