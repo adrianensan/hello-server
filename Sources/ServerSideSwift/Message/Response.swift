@@ -70,11 +70,13 @@ public class Response: Message, CustomStringConvertible {
             string += "\r\n"
         }
         
+        string += "Content-Length: \(!omitBody ? body.count : 0)"
+        string += "\r\n"
+        string += "\r\n"
+        
         if body.count > 0 && !omitBody {
-            string += "Content-Length: \(body.count)"
-            string += "\r\n\r\n"
             string += body
-        } else { string += "\r\n\r\n" }
+        }
         
         return string
     }

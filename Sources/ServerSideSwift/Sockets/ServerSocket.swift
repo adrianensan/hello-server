@@ -55,28 +55,29 @@ class ServerSocket: Socket {
     
     func acceptConnection() -> ClientSocket? {
         var clientAddrressStruct = sockaddr()
-        var clientAddressLength = socklen_t()
+        var clientAddressLength = socklen_t(MemoryLayout<sockaddr>.size)
         let newConnectionFD = accept(socketFileDescriptor, &clientAddrressStruct, &clientAddressLength)
         guard newConnectionFD != -1 else { return nil }
         
-        var clientAddress = [Int8](repeating: 0, count: Int(INET_ADDRSTRLEN))
+        var clientAddressBytes: [Int8] = [Int8](repeating: 0, count: Int(INET6_ADDRSTRLEN))
         switch clientAddrressStruct.sa_family {
         case sa_family_t(AF_INET):
             var ipv4 = sockaddr_in()
             memcpy(&ipv4, &clientAddrressStruct, MemoryLayout<sockaddr_in>.size)
-            inet_ntop(AF_INET, &(ipv4.sin_addr), &clientAddress, socklen_t(INET_ADDRSTRLEN));
+            inet_ntop(AF_INET, &(ipv4.sin_addr), &clientAddressBytes, socklen_t(INET_ADDRSTRLEN));
         case sa_family_t(AF_INET6):
-            clientAddress = []
+            clientAddressBytes = []
         default: ()
         }
         
-        print(clientAddress)
-        
+        clientAddressBytes = clientAddressBytes.filter({$0 != 0})
+        let clientAddressBytesData = Data(bytes: clientAddressBytes, count: clientAddressBytes.count)
+        let clientAddress = String(data: clientAddressBytesData, encoding: .utf8)
         
         if usingTLS {
-            return ClientSSLSocket(socketFD: newConnectionFD)
+            return ClientSSLSocket(socketFD: newConnectionFD, clientAddress: clientAddress)
         } else {
-            return ClientSocket(socketFD: newConnectionFD)
+            return ClientSocket(socketFD: newConnectionFD, clientAddress: clientAddress)
         }
     }
 }

@@ -31,10 +31,6 @@ class ClientSSLSocket: ClientSocket {
     
     var sslSocket: UnsafeMutablePointer<SSL>!
     
-    override init(socketFD: Int32) {
-        super.init(socketFD: socketFD)
-    }
-    
     func initSSLConnection(sslContext: UnsafeMutablePointer<SSL_CTX>) {
         sslSocket = SSL_new(sslContext);
         SSL_set_fd(sslSocket, socketFileDescriptor);

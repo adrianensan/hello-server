@@ -2,7 +2,12 @@ import Foundation
 
 class ClientSocket: Socket  {
     
-    var ipAddress: String?
+    var ipAddress: String
+    
+    init(socketFD: Int32, clientAddress: String? = nil) {
+        ipAddress = clientAddress ?? ""
+        super.init(socketFD: socketFD)
+    }
     
     func peakRawData() -> [UInt8]? {
         var requestBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
