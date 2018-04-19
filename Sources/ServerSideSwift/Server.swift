@@ -12,6 +12,18 @@ public class Server {
         case redirectNonMatchingHostToHost
     }
     
+    public enum AccessControl {
+        case acceptAll(blacklist: [String])
+        case blockAll(whitelist: [String])
+        
+        func shouldAllowAccessTo(ipAddress: String) -> Bool {
+            switch self {
+            case .acceptAll(let blacklist): return !blacklist.contains(ipAddress)
+            case .blockAll(let whitelist): return whitelist.contains(ipAddress)
+            }
+        }
+    }
+    
     private func httpToHttpsRedirectServer(host: String,
                                            connectionHandling: ConnectionHandling) -> Server {
         let redirectServer = Server(host: host)
@@ -33,6 +45,8 @@ public class Server {
         get { return documentRoot }
         set { documentRoot = /*CommandLine.arguments[0] +*/ newValue }
     }
+    public var accessControl: AccessControl = .acceptAll(blacklist: [])
+    public var pageAccessControl: [(url: String, accessControl: AccessControl, responseStatus: ResponseStatus)] = []
     public var connectionHandling: ConnectionHandling = .acceptAll
     public var shouldRedirectHttpToHttps: Bool = false
     public var shouldProvideStaticFiles: Bool = true
@@ -69,6 +83,10 @@ public class Server {
     
     func addEndpoint(method: Method, url: String, handler: @escaping (Request, Response) -> Void) {
         endpoints.append((method: method, url: url, handler: handler))
+    }
+    
+    func addPageSpecificAccessControl(subDirectory: String, accessControl: AccessControl, responseStatus: ResponseStatus) {
+        pageAccessControl.append((url: subDirectory, accessControl: accessControl, responseStatus: responseStatus))
     }
     
     func getHandlerFor(method: Method, url: String) -> ((Request, Response) -> Void)? {
@@ -115,8 +133,17 @@ public class Server {
     
     func handleConnection(socket: ClientSocket) {
         if let socket = socket as? ClientSSLSocket { socket.initSSLConnection(sslContext: sslContext) }
+        guard accessControl.shouldAllowAccessTo(ipAddress: socket.ipAddress) else { return }
         while let request = socket.acceptRequest() {
             let response = Response(clientSocket: socket)
+            for accessControlRule in pageAccessControl where
+                request.url.starts(with: accessControlRule.url) &&
+                !accessControlRule.accessControl.shouldAllowAccessTo(ipAddress: socket.ipAddress) {
+                    response.status = accessControlRule.responseStatus
+                    continue
+            }
+            guard case .ok = response.status else { continue }
+            
             if request.method == .head {
                 response.omitBody = true
                 request.method = .get
