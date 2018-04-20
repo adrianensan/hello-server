@@ -41,42 +41,21 @@ public class Response: Message, CustomStringConvertible {
     }
     
     public var description: String {
-        var string = ""
-        string += httpVersion.description
-        string += " "
-        string += status.description
-        string += "\r\n"
+        var string = httpVersion.description + " " + status.description + "\r\n"
         
-        if let location = location {
-            string += Header.locationHeader + location
-            string += "\r\n"
-        }
-        
-        for cookie in cookies {
-            string += cookie.description
-            string += "\r\n"
-        }
-        
-        for customHeader in customeHeaders {
-            string += customHeader
-            string += "\r\n"
-        }
+        if let location = location { string += Header.locationHeader + location + "\r\n" }
+        for cookie in cookies { string += cookie.description + "\r\n" }
+        string += Header.hstsHeader + "\r\n"
+        for customHeader in customeHeaders { string += customHeader + "\r\n" }
         
         switch contentType {
-        case .none:
-            ()
-        default:
-            string += contentType.description
-            string += "\r\n"
+        case .none: ()
+        default: string += contentType.description + "\r\n"
         }
         
-        string += "Content-Length: \(!omitBody ? body.count : 0)"
-        string += "\r\n"
-        string += "\r\n"
+        string += "Content-Length: \(!omitBody ? body.count : 0)\r\n\r\n"
         
-        if body.count > 0 && !omitBody {
-            string += body
-        }
+        if body.count > 0 && !omitBody { string += body }
         
         return string
     }
