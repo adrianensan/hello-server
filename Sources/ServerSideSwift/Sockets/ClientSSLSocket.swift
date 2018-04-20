@@ -1,39 +1,21 @@
 import Foundation
 import COpenSSL
 
-func cb( _ sslSocket: UnsafeMutablePointer<SSL>?,
-               _ out: UnsafeMutablePointer<UnsafePointer<UInt8>?>?,
-            _ outlen: UnsafeMutablePointer<UInt8>?,
-_ supportedProtocols: UnsafePointer<UInt8>?,
-             _ inlen: UInt32,
-              _ args: UnsafeMutableRawPointer?) -> Int32 {
-    if let supportedProtocols = supportedProtocols {
-        var data = [UInt8]()
-        for i in 0..<inlen {
-            data.append(supportedProtocols.advanced(by: Int(i)).pointee)
-        }
-        if let string = String(bytes: data, encoding: .utf8) {
-            for httpVersion in Server.supportedHTTPVersions {
-                if let match = string.range(of: httpVersion) {
-                    let offset = string.distance(from: string.startIndex, to: match.lowerBound)
-                    out?.initialize(to: supportedProtocols.advanced(by: offset))
-                    outlen?.initialize(to: UInt8(httpVersion.count))
-                    return SSL_TLSEXT_ERR_OK
-                }
-            }
-            return SSL_TLSEXT_ERR_ALERT_FATAL
-        }
-    }
-    return SSL_TLSEXT_ERR_NOACK
-}
-
 class ClientSSLSocket: ClientSocket {
+    
+    /*
+    func infoCallback(ssl: UnsafePointer<SSL>?, type: Int32, alertInfo: Int32) {
+        if (type & SSL_CB_HANDSHAKE_START != 0) {
+            
+        }
+    }*/
     
     var sslSocket: UnsafeMutablePointer<SSL>!
     
     func initSSLConnection(sslContext: UnsafeMutablePointer<SSL_CTX>) {
         sslSocket = SSL_new(sslContext);
         SSL_set_fd(sslSocket, socketFileDescriptor);
+        //SSL_CTX_set_info_callback(sslContext, infoCallback)
         let ssl_err = SSL_accept(sslSocket);
         if ssl_err <= 0 { close(socketFileDescriptor) }
     }

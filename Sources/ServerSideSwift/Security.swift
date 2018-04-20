@@ -3,7 +3,7 @@ import Foundation
 
 public struct Security {
     public static var isEnabled: Bool = true
-    public static var maxConnectionPerClient: Int = 10
+    public static var maxConnectionPerClient: Int = 20
     private static var hasStarted: Bool = false
     private static var openConnections = [String: Int]()
     private static var clientReputation = [String: Double]()
@@ -43,6 +43,10 @@ public struct Security {
                 sleep(1)
                 for (client, reputation) in clientReputation {
                     clientReputation[client] = max(0.1, min(1, reputation + 0.5 * reputation))
+                    if clientReputation[client] == 1 && openConnections[client] ?? 0 == 0 {
+                        clientReputation.removeValue(forKey: client)
+                        openConnections.removeValue(forKey: client)
+                    }
                 }
             }
         }
