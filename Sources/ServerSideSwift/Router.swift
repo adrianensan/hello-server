@@ -3,14 +3,17 @@ import Foundation
 import COpenSSL
 
 class Router {
+    
     static var routingTable = [String: Server]()
     static var listeningPorts = [UInt16: ServerSocket]()
     
     static func addServer(host: String, port: UInt16, usingTLS: Bool, server: Server) {
+        Security.startSecurityMonitor()
         if Router.listeningPorts[port] == nil {
             Router.listeningPorts[port] = ServerSocket(port: port, usingTLS: usingTLS)
             DispatchQueue(label: "listeningSocket-\(port)").async {
                 while let newClient = Router.listeningPorts[port]?.acceptConnection() {
+                    if !Security.shouldAllowConnection(from: newClient.ipAddress) { continue }
                     DispatchQueue(label: "client-\(newClient)").async {
                         var requestedHost = ""
                         if let newClient = newClient as? ClientSSLSocket, let clientHello = newClient.peakRawData() {

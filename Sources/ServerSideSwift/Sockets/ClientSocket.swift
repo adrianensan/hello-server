@@ -7,6 +7,11 @@ class ClientSocket: Socket  {
     init(socketFD: Int32, clientAddress: String? = nil) {
         ipAddress = clientAddress ?? ""
         super.init(socketFD: socketFD)
+        Security.connectionOpened(ipAddress: ipAddress)
+    }
+    
+    deinit {
+        Security.connectionClosed(ipAddress: ipAddress)
     }
     
     func peakRawData() -> [UInt8]? {
@@ -34,7 +39,8 @@ class ClientSocket: Socket  {
             requestLength += bytesRead
             if let requestString = String(bytes: requestBuffer[..<requestLength].filter{$0 != 13}, encoding: .utf8) {
                 requestLength = 0
-                return Request.parse(string: requestString);
+                Security.requestRecieved(from: ipAddress)
+                return Security.clientHasBadReputation(ipAddress: ipAddress) ? nil : Request.parse(string: requestString);
             }
         }
     }
