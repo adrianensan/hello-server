@@ -1,5 +1,4 @@
 import Foundation
-import COpenSSL
 
 class ClientSSLSocket: ClientSocket {
     
@@ -10,20 +9,29 @@ class ClientSSLSocket: ClientSocket {
         }
     }*/
     
-    var sslSocket: UnsafeMutablePointer<SSL>!
+    var sslSession: SSLContext!
     
-    func initSSLConnection(sslContext: UnsafeMutablePointer<SSL_CTX>) {
-        sslSocket = SSL_new(sslContext);
-        SSL_set_fd(sslSocket, socketFileDescriptor);
+    deinit {
+        SSLClose(sslSession)
+    }
+    
+    func initSSLConnection(identity: SecIdentity) {
+        sslSession = SSLCreateContext(kCFAllocatorDefault, .serverSide, .streamType)!
+        SSLSetCertificate(sslSession, [identity] as CFArray)
+        SSLSetConnection(sslSession, &socketFileDescriptor)
+        SSLSetSessionOption(sslSession, .allowRenegotiation, true)
+        SSLHandshake(sslSession)
+        
         //SSL_CTX_set_info_callback(sslContext, infoCallback)
-        let ssl_err = SSL_accept(sslSocket);
-        if ssl_err <= 0 { close(socketFileDescriptor) }
+        //let ssl_err = SSL_accept(sslSocket);
+        //if ssl_err <= 0 { close(socketFileDescriptor) }
     }
     
     override func sendData(data: [UInt8]) {
         var bytesToSend = data.count
         repeat {
-            let bytesSent = SSL_write(sslSocket, data, Int32(bytesToSend));
+            var bytesSent = 0;
+            SSLWrite(sslSession, data, bytesToSend, &bytesSent);
             if bytesSent <= 0 { return }
             bytesToSend -= Int(bytesSent)
         } while bytesToSend > 0
@@ -33,7 +41,8 @@ class ClientSSLSocket: ClientSocket {
         var requestBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
         var requestLength: Int = 0
         while true {
-            let bytesRead = SSL_read(sslSocket, &requestBuffer[requestLength], Int32(Socket.bufferSize - requestLength));
+            var bytesRead = 0;
+            SSLRead(sslSession, &requestBuffer[requestLength], Socket.bufferSize - requestLength, &bytesRead);
             guard bytesRead > 0 else { return nil }
             requestLength += Int(bytesRead)
             if let requestString = String(bytes: requestBuffer[..<requestLength].filter{$0 != 13}, encoding: .utf8) {

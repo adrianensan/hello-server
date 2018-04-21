@@ -1,6 +1,5 @@
 import Dispatch
 import Foundation
-import COpenSSL
 
 class Router {
     
@@ -75,7 +74,7 @@ class Router {
             pos += 2
             let extensionLength = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
             pos += 2
-            if extensionType == TLSEXT_TYPE_server_name {
+            if extensionType == 0 {
                 let listLength = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
                 pos += 2
                 if clientHello.count >= pos + listLength && clientHello[pos] == 0 {
