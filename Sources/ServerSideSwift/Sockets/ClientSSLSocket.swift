@@ -1,5 +1,5 @@
 import Foundation
-import COpenSSL
+import OpenSSL
 
 class ClientSSLSocket: ClientSocket {
     

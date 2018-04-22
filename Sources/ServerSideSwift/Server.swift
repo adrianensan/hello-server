@@ -1,6 +1,6 @@
 import Dispatch
 import Foundation
-import COpenSSL
+import OpenSSL
 
 func alpn_select_callback( _ sslSocket: UnsafeMutablePointer<SSL>?,
                            _ out: UnsafeMutablePointer<UnsafePointer<UInt8>?>?,
