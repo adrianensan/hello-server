@@ -49,7 +49,7 @@ public class Response: Message, CustomStringConvertible {
         default: string += contentType.description + "\r\n"
         }
         
-        string += "Content-Length: \(!omitBody ? [UInt8](body).count : 0)\r\n\r\n"
+        string += "Content-Length: \(!omitBody ? body.count : 0)\r\n\r\n"
         return string
     }
     
@@ -60,7 +60,7 @@ public class Response: Message, CustomStringConvertible {
     public var description: String {
         var string = headerString
         
-        if body.count > 0 && !omitBody, let bodyString = String(data: body, encoding: .utf8) { string += bodyString }
+        if !omitBody { string += bodyString }
         
         return string
     }

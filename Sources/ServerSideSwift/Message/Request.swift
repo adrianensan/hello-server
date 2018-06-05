@@ -13,11 +13,12 @@ public class Request: Message, CustomStringConvertible {
     }
     
     public var description: String {
-        //\(body.count > 0 ? body : "[No Body]")
         return
             """
             \(method) \(url)\n
             Host: \(host ?? "Not Set")
+             
+            \(bodyString)
             """
     }
 }

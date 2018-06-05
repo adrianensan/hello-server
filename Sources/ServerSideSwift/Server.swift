@@ -132,7 +132,6 @@ public class Server {
     
     func staticFileHandler(request: Request, response: Response) {
         var url = staticDocumentRoot + request.url
-        print(url)
         
         if let file = try? Data(contentsOf: URL(fileURLWithPath: url)) {
             var fileExtension = ""
