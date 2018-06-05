@@ -36,7 +36,7 @@ public class Response: Message, CustomStringConvertible {
         socket = nil
     }
     
-    public var description: String {
+    public var headerString: String {
         var string = httpVersion.description + " " + status.description + "\r\n"
         
         if let location = location { string += Header.locationHeader + location + "\r\n" }
@@ -50,6 +50,15 @@ public class Response: Message, CustomStringConvertible {
         }
         
         string += "Content-Length: \(!omitBody ? body.count : 0)\r\n\r\n"
+        return string
+    }
+    
+    public var responseData: Data {
+        return Data(headerString.utf8) + body
+    }
+    
+    public var description: String {
+        var string = headerString
         
         if body.count > 0 && !omitBody, let bodyString = String(data: body, encoding: .utf8) { string += bodyString }
         
