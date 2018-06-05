@@ -49,7 +49,7 @@ public class Response: Message, CustomStringConvertible {
         default: string += contentType.description + "\r\n"
         }
         
-        string += "Content-Length: \(!omitBody ? body.count : 0)\r\n\r\n"
+        string += "Content-Length: \(!omitBody ? [UInt8](body).count : 0)\r\n\r\n"
         return string
     }
     
