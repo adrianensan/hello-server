@@ -25,13 +25,9 @@ public class Response: Message, CustomStringConvertible {
     }
     
     public func setBodyJSON<T: Encodable>(object: T, append: Bool = false) {
-        if let json = try? JSONEncoder().encode(object),
-            let jsonString = String(data: json, encoding: String.Encoding.utf8) {
-            if append {
-                body += jsonString
-            } else {
-                body = jsonString
-            }
+        if let json = try? JSONEncoder().encode(object) {
+            if append { body += json }
+            else { body = json }
         }
     }
     
@@ -55,7 +51,7 @@ public class Response: Message, CustomStringConvertible {
         
         string += "Content-Length: \(!omitBody ? body.count : 0)\r\n\r\n"
         
-        if body.count > 0 && !omitBody { string += body }
+        if body.count > 0 && !omitBody, let bodyString = String(data: body, encoding: .utf8) { string += bodyString }
         
         return string
     }

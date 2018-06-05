@@ -132,8 +132,9 @@ public class Server {
     
     func staticFileHandler(request: Request, response: Response) {
         var url = staticDocumentRoot + request.url
+        print(url)
         
-        if let file = try? String(contentsOf: URL(fileURLWithPath: url), encoding: .utf8) {
+        if let file = try? Data(contentsOf: URL(fileURLWithPath: url)) {
             var fileExtension = ""
             let splits = url.split(separator: "/", omittingEmptySubsequences: true)
             if let fileName = splits.last {
@@ -144,12 +145,12 @@ public class Server {
             response.contentType = .from(fileExtension: fileExtension)
         } else {
             if url.last ?? " " != "/" { url += "/" }
-            if let file = try? String(contentsOf: URL(fileURLWithPath: url + "index.html"), encoding: .utf8) {
+            if let file = try? Data(contentsOf: URL(fileURLWithPath: url + "index.html")) {
                 response.body = file
                 response.contentType = .html
             } else {
                 response.status = .notFound
-                response.body = notFoundPage
+                response.body = Data(notFoundPage.utf8)
                 response.contentType = .html
             }
         }
