@@ -29,7 +29,7 @@ extension Request {
         }
         
         if let request = request, let bodyStartIndex = headerEnd?.upperBound, bodyStartIndex != string.endIndex {
-            request.body = String(string[string.index(after: bodyStartIndex)..<string.endIndex])
+            //request.body = String(string[string.index(after: bodyStartIndex)..<string.endIndex])
         }
         
         return request

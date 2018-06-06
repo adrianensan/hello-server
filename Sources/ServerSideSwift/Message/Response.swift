@@ -25,13 +25,9 @@ public class Response: Message, CustomStringConvertible {
     }
     
     public func setBodyJSON<T: Encodable>(object: T, append: Bool = false) {
-        if let json = try? JSONEncoder().encode(object),
-            let jsonString = String(data: json, encoding: String.Encoding.utf8) {
-            if append {
-                body += jsonString
-            } else {
-                body = jsonString
-            }
+        if let json = try? JSONEncoder().encode(object) {
+            if append { body += json }
+            else { body = json }
         }
     }
     
@@ -40,7 +36,7 @@ public class Response: Message, CustomStringConvertible {
         socket = nil
     }
     
-    public var description: String {
+    public var headerString: String {
         var string = httpVersion.description + " " + status.description + "\r\n"
         
         if let location = location { string += Header.locationHeader + location + "\r\n" }
@@ -54,8 +50,17 @@ public class Response: Message, CustomStringConvertible {
         }
         
         string += "Content-Length: \(!omitBody ? body.count : 0)\r\n\r\n"
+        return string
+    }
+    
+    public var responseData: Data {
+        return Data(headerString.utf8) + body
+    }
+    
+    public var description: String {
+        var string = headerString
         
-        if body.count > 0 && !omitBody { string += body }
+        if !omitBody { string += bodyString }
         
         return string
     }

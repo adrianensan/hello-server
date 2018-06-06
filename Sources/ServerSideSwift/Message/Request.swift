@@ -17,7 +17,8 @@ public class Request: Message, CustomStringConvertible {
             """
             \(method) \(url)\n
             Host: \(host ?? "Not Set")
-            \(body.count > 0 ? body : "[No Body]")
+             
+            \(bodyString)
             """
     }
 }

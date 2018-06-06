@@ -46,8 +46,7 @@ class ClientSocket: Socket  {
     }
     
     func sendResponse(_ response: Response) {
-        let responseString: String = response.description
-        let responseBytes: [UInt8] = [UInt8](responseString.data)
+        let responseBytes: [UInt8] = [UInt8](response.responseData)
         sendData(data: responseBytes)
     }
     
