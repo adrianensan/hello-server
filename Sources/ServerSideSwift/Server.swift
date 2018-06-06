@@ -149,7 +149,7 @@ public class Server {
                 response.contentType = .html
             } else {
                 response.status = .notFound
-                response.body = Data(notFoundPage.utf8)
+                response.bodyString = notFoundPage
                 response.contentType = .html
             }
         }
