@@ -36,11 +36,8 @@ class ClientSSLSocket: ClientSocket {
             let bytesRead = SSL_read(sslSocket, &requestBuffer[requestLength], Int32(Socket.bufferSize - requestLength));
             guard bytesRead > 0 else { return nil }
             requestLength += Int(bytesRead)
-            if let requestString = String(bytes: requestBuffer[..<requestLength].filter{$0 != 13}, encoding: .utf8) {
-                requestLength = 0
-                Security.requestRecieved(from: ipAddress)
-                return Security.clientHasBadReputation(ipAddress: ipAddress) ? nil : Request.parse(string: requestString);
-            }
+            Security.requestRecieved(from: ipAddress)
+            return Security.clientHasBadReputation(ipAddress: ipAddress) ? nil : Request.parse(data: requestBuffer[..<requestLength].filter{$0 != 13});
         }
     }
 }
