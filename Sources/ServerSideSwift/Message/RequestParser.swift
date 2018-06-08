@@ -1,37 +1,50 @@
 import Foundation
 
 extension Request {
-    static func parse(string: String) -> Request? {
+    static func parse(data: [UInt8]) -> Request? {
         var request: Request?
-        let headerEnd = string.range(of: "\n\n")
-        let headerFields = string[..<(headerEnd?.lowerBound ?? string.endIndex)].split(separator: "\n")
+        guard let headerEnd = Request.findHeaderEnd(data: data) else { return nil }
+        let headerFields = data[..<headerEnd].split(separator: 10)
         for headerField in headerFields {
-            if let request = request {
-                if headerField.starts(with: "Host: ") {
-                    request.host = headerField.split(separator: ":", maxSplits: 1)[1].trimmingCharacters(in: .whitespaces)
-                } else if headerField.starts(with: Header.cookieHeader) {
-                    let cookies = headerField.split(separator: ":", maxSplits: 1)[1].split(separator: ";")
-                    for cookieAttribute in cookies {
-                        var parts = cookieAttribute.split(separator: "=", maxSplits: 1)
-                        if parts.count == 2 {
-                            let name = parts[0].trimmingCharacters(in: .whitespaces)
-                            let value = parts[1].trimmingCharacters(in: .whitespaces)
-                            if name.count > 0 { request.cookies[name] = value }
+            if let headerLine = String(data: Data(headerField), encoding: .utf8) {
+                if let request = request {
+                    if headerLine.starts(with: "Host: ") {
+                        request.host = headerLine.split(separator: ":", maxSplits: 1)[1].trimmingCharacters(in: .whitespaces)
+                    } else if headerLine.starts(with: Header.cookieHeader) {
+                        let cookies = headerLine.split(separator: ":", maxSplits: 1)[1].split(separator: ";")
+                        for cookieAttribute in cookies {
+                            var parts = cookieAttribute.split(separator: "=", maxSplits: 1)
+                            if parts.count == 2 {
+                                let name = parts[0].trimmingCharacters(in: .whitespaces)
+                                let value = parts[1].trimmingCharacters(in: .whitespaces)
+                                if name.count > 0 { request.cookies[name] = value }
+                            }
                         }
                     }
-                }
-            } else {
-                let segments = headerField.lowercased().split(separator: " ")
-                if segments.count == 3 && segments[2].starts(with: "http/") {
-                    request = Request(method: Method.inferFrom(string: String(segments[0])), url: String(segments[1]))
+                } else {
+                    let segments = headerLine.lowercased().split(separator: " ")
+                    if segments.count == 3 && segments[2].starts(with: "http/") {
+                        request = Request(method: Method.inferFrom(string: String(segments[0])), url: String(segments[1]))
+                    }
                 }
             }
         }
         
-        if let request = request, let bodyStartIndex = headerEnd?.upperBound, bodyStartIndex != string.endIndex {
-            //request.body = String(string[string.index(after: bodyStartIndex)..<string.endIndex])
+        let bodyStartIndex = headerEnd + 2
+        if let request = request, bodyStartIndex < data.count {
+            request.body = Data(data[bodyStartIndex..<data.count])
         }
         
         return request
+    }
+    
+    static func findHeaderEnd(data: [UInt8]) -> Int? {
+        for i in 0..<(data.count - 1) {
+            if data[i] == 10 && data[i + 1] == 10 {
+                return i
+            }
+        }
+        
+        return nil
     }
 }

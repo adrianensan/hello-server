@@ -24,8 +24,8 @@ class ClientSocket: Socket  {
     }
     
     func peakPacket() -> Request? {
-        if let data = peakRawData(), let requestString = String(bytes: data.filter{$0 != 13}, encoding: .utf8) {
-            return Request.parse(string: requestString);
+        if let data = peakRawData() {
+            return Request.parse(data: data.filter{$0 != 13});
         }
         return nil
     }
@@ -37,11 +37,8 @@ class ClientSocket: Socket  {
             let bytesRead = recv(socketFileDescriptor, &requestBuffer[requestLength], Socket.bufferSize - requestLength, 0)
             guard bytesRead > 0 else { return nil }
             requestLength += bytesRead
-            if let requestString = String(bytes: requestBuffer[..<requestLength].filter{$0 != 13}, encoding: .utf8) {
-                requestLength = 0
-                Security.requestRecieved(from: ipAddress)
-                return Security.clientHasBadReputation(ipAddress: ipAddress) ? nil : Request.parse(string: requestString);
-            }
+            Security.requestRecieved(from: ipAddress)
+            return Security.clientHasBadReputation(ipAddress: ipAddress) ? nil : Request.parse(data: requestBuffer[..<requestLength].filter{$0 != 13});
         }
     }
     
