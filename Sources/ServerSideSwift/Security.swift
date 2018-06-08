@@ -2,7 +2,7 @@ import Dispatch
 import Foundation
 
 public struct Security {
-    public static var isEnabled: Bool = true
+    public static var isEnabled: Bool = false
     public static var maxConnectionPerClient: Int = 20
     private static var hasStarted: Bool = false
     private static var openConnections = [String: Int]()

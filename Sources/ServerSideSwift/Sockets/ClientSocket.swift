@@ -33,13 +33,11 @@ class ClientSocket: Socket  {
     func acceptRequest() -> Request? {
         var requestBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
         var requestLength: Int = 0
-        while true {
-            let bytesRead = recv(socketFileDescriptor, &requestBuffer[requestLength], Socket.bufferSize - requestLength, 0)
-            guard bytesRead > 0 else { return nil }
-            requestLength += bytesRead
-            Security.requestRecieved(from: ipAddress)
-            return Security.clientHasBadReputation(ipAddress: ipAddress) ? nil : Request.parse(data: requestBuffer[..<requestLength].filter{$0 != 13});
-        }
+        let bytesRead = recv(socketFileDescriptor, &requestBuffer[requestLength], Socket.bufferSize - requestLength, 0)
+        guard bytesRead > 0 else { return nil }
+        requestLength += bytesRead
+        Security.requestRecieved(from: ipAddress)
+        return Security.clientHasBadReputation(ipAddress: ipAddress) ? nil : Request.parse(data: requestBuffer[..<requestLength].filter{$0 != 13});
     }
     
     func sendResponse(_ response: Response) {
