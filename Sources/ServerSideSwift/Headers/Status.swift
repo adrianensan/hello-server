@@ -1,4 +1,4 @@
-public enum ResponseStatus: CustomStringConvertible {
+public enum ResponseStatus {
     case `continue`
     case switchingProtocols
     case ok
@@ -56,7 +56,7 @@ public enum ResponseStatus: CustomStringConvertible {
         case             .movedPermanently: return 301
         case                        .found: return 302
         case                     .seeOther: return 303
-        case                  .notModified: return 304
+        case                   .notModified: return 304
         case                     .useProxy: return 305
         case            .temporaryRedirect: return 307
         case                   .badRequest: return 400
@@ -68,14 +68,14 @@ public enum ResponseStatus: CustomStringConvertible {
         case                .notAcceptable: return 406
         case  .proxyAuthenticationRequired: return 407
         case               .requestTimeout: return 408
-        case                     .conflict: return 409
+        case                      .conflict: return 409
         case                         .gone: return 410
         case               .lengthRequired: return 411
         case           .preconditionFailed: return 412
         case        .requestEntityTooLarge: return 413
         case            .requestURITooLong: return 414
         case         .unsupportedMediaType: return 415
-        case .requestedRangeNotSatisfiable: return 416
+        case  .requestedRangeNotSatisfiable: return 416
         case            .expectationFailed: return 417
         case          .internalServerError: return 500
         case               .notImplemented: return 501
@@ -102,7 +102,7 @@ public enum ResponseStatus: CustomStringConvertible {
         case             .movedPermanently: return "Moved Permanently"
         case                        .found: return "Found"
         case                     .seeOther: return "See Other"
-        case                  .notModified: return "Not Modified"
+        case                   .notModified: return "Not Modified"
         case                     .useProxy: return "Use Proxy"
         case            .temporaryRedirect: return "Temporary Redirect"
         case                   .badRequest: return "Bad Request"
@@ -114,14 +114,14 @@ public enum ResponseStatus: CustomStringConvertible {
         case                .notAcceptable: return "Not Acceptable"
         case  .proxyAuthenticationRequired: return "Proxy Authentication Required"
         case               .requestTimeout: return "Request Timeout"
-        case                     .conflict: return "Conflict"
+        case                      .conflict: return "Conflict"
         case                         .gone: return "Gone"
         case               .lengthRequired: return "Length Required"
         case           .preconditionFailed: return "Precondition Failed"
         case        .requestEntityTooLarge: return "Request Entity Too Large"
         case            .requestURITooLong: return "Request-URI Too Long"
         case         .unsupportedMediaType: return "Unsupported Media Type"
-        case .requestedRangeNotSatisfiable: return "Requested Range Not Satisfiable"
+        case  .requestedRangeNotSatisfiable: return "Requested Range Not Satisfiable"
         case            .expectationFailed: return "Expectation Failed"
         case          .internalServerError: return "Internal Server Error"
         case               .notImplemented: return "Not Implemented"

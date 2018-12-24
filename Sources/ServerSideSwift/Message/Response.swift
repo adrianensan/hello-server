@@ -8,6 +8,7 @@ public class Response: Message, CustomStringConvertible {
     var customeHeaders: [String] = [String]()
     public var contentType: ContentType = .none
     public var location: String?
+    public var lastModifiedDate: Date?
     public var omitBody: Bool = false
 
     private var socket: ClientSocket?
@@ -42,6 +43,7 @@ public class Response: Message, CustomStringConvertible {
         if let location = location { string += Header.locationHeader + location + "\r\n" }
         for cookie in cookies { string += cookie.description + "\r\n" }
         string += Header.hstsHeader + "\r\n"
+        if let date = lastModifiedDate { string += Header.lastModifiedHeader + Header.httpDateFormater.string(from: date) + "\r\n" }
         for customHeader in customeHeaders { string += customHeader + "\r\n" }
         
         switch contentType {

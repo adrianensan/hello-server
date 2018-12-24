@@ -131,7 +131,7 @@ public class Server {
     }
     
     func staticFileHandler(request: Request, response: Response) {
-        var url = staticDocumentRoot + request.url
+        var url: String = staticDocumentRoot + request.url
         
         if let file = try? Data(contentsOf: URL(fileURLWithPath: url)) {
             var fileExtension = ""
@@ -143,8 +143,9 @@ public class Server {
             response.body = file
             response.contentType = .from(fileExtension: fileExtension)
         } else {
-            if url.last ?? " " != "/" { url += "/" }
-            if let file = try? Data(contentsOf: URL(fileURLWithPath: url + "index.html")) {
+            if url.last != "/" { url += "/" }
+            url += "index.html"
+            if let file = try? Data(contentsOf: URL(fileURLWithPath: url)) {
                 response.body = file
                 response.contentType = .html
             } else {
@@ -153,6 +154,8 @@ public class Server {
                 response.contentType = .html
             }
         }
+        
+        response.lastModifiedDate = (try? FileManager.default.attributesOfItem(atPath: url))?[FileAttributeKey.modificationDate] as? Date
         
         response.complete()
     }
