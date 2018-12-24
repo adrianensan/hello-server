@@ -5,6 +5,7 @@ class Header {
     static let locationHeader = "Location: "
     static let cookieHeader = "Cookie: "
     static let setCookieHeader = "Set-Cookie: "
+    static let lastModifiedHeader = "If-Modified-Since: "
     static let hstsHeader = "Strict-Transport-Security: max-age=31536000; includeSubDomains"
 
 
