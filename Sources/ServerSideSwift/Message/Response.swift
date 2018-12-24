@@ -11,7 +11,7 @@ public class Response: Message, CustomStringConvertible {
     public var lastModifiedDate: Date?
     public var omitBody: Bool = false
 
-    private var socket: ClientSocket?
+    weak private var socket: ClientSocket?
     
     init(clientSocket: ClientSocket? = nil) {
         socket = clientSocket

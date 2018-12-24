@@ -2,6 +2,12 @@ import Foundation
 
 class ClientSocket: Socket  {
     
+    #if os(Linux)
+    static let socketSendFlags: Int32 = Int32(MSG_NOSIGNAL)
+    #else
+    static let socketSendFlags: Int32 = 0
+    #endif
+    
     var ipAddress: String
     
     init(socketFD: Int32, clientAddress: String? = nil) {
@@ -25,7 +31,7 @@ class ClientSocket: Socket  {
     
     func peakPacket() -> Request? {
         if let data = peakRawData() {
-            return Request.parse(data: data.filter{$0 != 13});
+            return Request.parse(data: data.filter{$0 != 13})
         }
         return nil
     }
@@ -37,7 +43,7 @@ class ClientSocket: Socket  {
         guard bytesRead > 0 else { return nil }
         requestLength += bytesRead
         Security.requestRecieved(from: ipAddress)
-        return Security.clientHasBadReputation(ipAddress: ipAddress) ? nil : Request.parse(data: requestBuffer[..<requestLength].filter{$0 != 13});
+        return Security.clientHasBadReputation(ipAddress: ipAddress) ? nil : Request.parse(data: requestBuffer[..<requestLength].filter{$0 != 13})
     }
     
     func sendResponse(_ response: Response) {
@@ -48,7 +54,7 @@ class ClientSocket: Socket  {
     func sendData(data: [UInt8]) {
         var bytesToSend = data.count
         repeat {
-            let bytesSent = send(socketFileDescriptor, data, bytesToSend, 0);
+            let bytesSent = send(socketFileDescriptor, data, bytesToSend, ClientSocket.socketSendFlags)
             if bytesSent <= 0 { return }
             bytesToSend -= bytesSent
         } while bytesToSend > 0

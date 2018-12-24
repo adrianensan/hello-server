@@ -23,7 +23,7 @@ class ClientSSLSocket: ClientSocket {
     override func sendData(data: [UInt8]) {
         var bytesToSend = data.count
         repeat {
-            let bytesSent = SSL_write(sslSocket, data, Int32(bytesToSend));
+            let bytesSent = SSL_write(sslSocket, data, Int32(bytesToSend))
             if bytesSent <= 0 { return }
             bytesToSend -= Int(bytesSent)
         } while bytesToSend > 0
@@ -33,11 +33,11 @@ class ClientSSLSocket: ClientSocket {
         var requestBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
         var requestLength: Int = 0
         while true {
-            let bytesRead = SSL_read(sslSocket, &requestBuffer[requestLength], Int32(Socket.bufferSize - requestLength));
+            let bytesRead = SSL_read(sslSocket, &requestBuffer[requestLength], Int32(Socket.bufferSize - requestLength))
             guard bytesRead > 0 else { return nil }
             requestLength += Int(bytesRead)
             Security.requestRecieved(from: ipAddress)
-            return Security.clientHasBadReputation(ipAddress: ipAddress) ? nil : Request.parse(data: requestBuffer[..<requestLength].filter{$0 != 13});
+            return Security.clientHasBadReputation(ipAddress: ipAddress) ? nil : Request.parse(data: requestBuffer[..<requestLength].filter{$0 != 13})
         }
     }
 }

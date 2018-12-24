@@ -29,10 +29,16 @@ class ServerSocket: Socket {
         guard socketFileDescriptor >= 0 else { fatalError("Failed to initialize socket") }
         
         var value = 1
-        guard setsockopt(socketFileDescriptor, SOL_SOCKET, SO_REUSEADDR, &value,
-                         socklen_t(MemoryLayout<Int32>.size)) != -1 else {
+        guard setsockopt(socketFileDescriptor, SOL_SOCKET, SO_REUSEADDR,
+                         &value, socklen_t(MemoryLayout<Int32>.size)) != -1 else {
                             fatalError("setsockopt failed.")
         }
+        #if !os(Linux)
+        guard setsockopt(socketFileDescriptor, SOL_SOCKET, SO_NOSIGPIPE,
+                         &value, socklen_t(MemoryLayout<Int32>.size)) != -1 else {
+                            fatalError("setsockopt failed.")
+        }
+        #endif
         
         var addr = sockaddr_in()
         addr.sin_family = sa_family_t(AF_INET);

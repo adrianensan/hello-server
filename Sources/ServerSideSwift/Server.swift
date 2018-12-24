@@ -171,7 +171,10 @@ public class Server {
                     response.status = accessControlRule.responseStatus
                     continue
             }
-            guard case .ok = response.status else { continue }
+            guard case .ok = response.status else {
+                response.complete()
+                continue
+            }
             
             if request.method == .head {
                 response.omitBody = true
