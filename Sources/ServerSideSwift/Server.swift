@@ -118,7 +118,7 @@ public class Server {
     func getHandlerFor(method: Method, url: String) -> ((Request, Response) -> Void)? {
         for handler in endpoints {
             if handler.method == .any || handler.method == method {
-                if let end = handler.url.index(of: "*") {
+                if let end = handler.url.firstIndex(of: "*") {
                     if url.starts(with: handler.url[..<end]) {
                         return handler.handler
                     }
