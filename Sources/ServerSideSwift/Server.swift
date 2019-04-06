@@ -150,7 +150,7 @@ public class Server {
         } else {
             guard url.last == "/" else {
                 url += "/"
-                response.location = "https://" + host + request.url + "/"
+                response.location = "http\(usingTLS ? "s" : "")://" + host + request.url + "/"
                 response.status = .movedPermanently
                 response.complete()
                 return
