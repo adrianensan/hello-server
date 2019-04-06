@@ -1,13 +1,14 @@
 import Foundation
 
 extension String {
+    
+    static let lineBreak: String = "\r\n"
+    
     var data: Data {
-        return self.data(using: .utf8) ?? Data()
+        return data(using: .utf8) ?? Data()
     }
     
     var filterNewlines: String {
-        return self.filter{!"\r\n".contains($0)}
+        return filter{!String.lineBreak.contains($0)}
     }
-    
-    static var newline: String { return "\r\n" }
 }

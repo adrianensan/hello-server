@@ -42,20 +42,20 @@ public class Response: Message, CustomStringConvertible {
     }
     
     public var headerString: String {
-        var string: String = httpVersion.description + " " + status.description + .newline
+        var string: String = httpVersion.description + " " + status.description + .lineBreak
         
-        if let location = location { string += Header.locationHeader + location + .newline }
-        for cookie in cookies { string += cookie.description + .newline }
-        string += Header.hstsHeader + .newline
-        if let date = lastModifiedDate { string += Header.lastModifiedHeader + Header.httpDateFormater.string(from: date) + .newline }
-        for customHeader in customeHeaders { string += customHeader + .newline }
+        if let location = location { string += Header.locationHeader + location + .lineBreak }
+        for cookie in cookies { string += cookie.description + .lineBreak }
+        string += Header.hstsHeader + .lineBreak
+        if let date = lastModifiedDate { string += Header.lastModifiedHeader + Header.httpDateFormater.string(from: date) + .lineBreak }
+        for customHeader in customeHeaders { string += customHeader + .lineBreak }
         
         switch contentType {
         case .none: ()
-        default: string += contentType.description + .newline
+        default: string += contentType.description + .lineBreak
         }
         
-        string += "Content-Length: \(!omitBody ? body.count : 0)\(.newline + .newline)"
+        string += "Content-Length: \(!omitBody ? body.count : 0)\(.lineBreak + .lineBreak)"
         return string
     }
     
