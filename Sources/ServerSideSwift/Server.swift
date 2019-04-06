@@ -103,16 +103,21 @@ public class Server {
     }
     
     public func useTLS(certificateFile: String, privateKeyFile: String) {
-        initSSLContext(certificateFile: certificateFile, privateKeyFile: privateKeyFile)
+        initSSLContext(certificateFile: certificateFile,
+                       privateKeyFile: privateKeyFile)
         usingTLS = true
     }
     
     func addEndpoint(method: Method, url: String, handler: @escaping (Request, Response) -> Void) {
-        endpoints.append((method: method, url: url, handler: handler))
+        endpoints.append((method: method,
+                          url: url,
+                          handler: handler))
     }
     
     func addPageSpecificAccessControl(subDirectory: String, accessControl: AccessControl, responseStatus: ResponseStatus) {
-        pageAccessControl.append((url: subDirectory, accessControl: accessControl, responseStatus: responseStatus))
+        pageAccessControl.append((url: subDirectory,
+                                  accessControl: accessControl,
+                                  responseStatus: responseStatus))
     }
     
     func getHandlerFor(method: Method, url: String) -> ((Request, Response) -> Void)? {
@@ -138,12 +143,18 @@ public class Server {
             let splits = url.split(separator: "/", omittingEmptySubsequences: true)
             if let fileName = splits.last {
                 let fileNameSplits = fileName.split(separator: ".")
-                if let potentialExtension = fileNameSplits.last { fileExtension = String(potentialExtension) }
+                if let potentialFileExtension = fileNameSplits.last { fileExtension = String(potentialFileExtension) }
             }
             response.body = file
             response.contentType = .from(fileExtension: fileExtension)
         } else {
-            if url.last != "/" { url += "/" }
+            guard url.last == "/" else {
+                url += "/"
+                response.location = "https://" + host + request.url + "/"
+                response.status = .movedPermanently
+                response.complete()
+                return
+            }
             url += "index.html"
             if let file = try? Data(contentsOf: URL(fileURLWithPath: url)) {
                 response.body = file
@@ -181,18 +192,27 @@ public class Server {
                 request.method = .get
             }
             
-            if let handler = getHandlerFor(method: request.method, url: request.url) {
+            if let handler = getHandlerFor(method: request.method,
+                                           url: request.url) {
                 handler(request, response)
             } else {
-                staticFileHandler(request: request, response: response)
+                staticFileHandler(request: request,
+                                  response: response)
             }
         }
     }
     
     public func start() {
         if shouldRedirectHttpToHttps {
-            Router.addServer(host: host, port: httpPort, usingTLS: false, server: httpToHttpsRedirectServer(host: host, connectionHandling: connectionHandling))
+            Router.addServer(host: host,
+                             port: httpPort,
+                             usingTLS: false,
+                             server: httpToHttpsRedirectServer(host: host,
+                                                               connectionHandling: connectionHandling))
         }
-        Router.addServer(host: host, port: self.usingTLS ? self.httpsPort : self.httpPort, usingTLS: usingTLS, server: self)
+        Router.addServer(host: host,
+                         port: self.usingTLS ? self.httpsPort : self.httpPort,
+                         usingTLS: usingTLS,
+                         server: self)
     }
 }

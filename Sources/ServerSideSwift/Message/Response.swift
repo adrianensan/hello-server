@@ -33,25 +33,29 @@ public class Response: Message, CustomStringConvertible {
     }
     
     public func complete() {
-        if let socket = socket { socket.sendResponse(self) }
-        socket = nil
+        guard let socket = socket else {
+            print("Attempted to complete a response after it was already sent, don't do this, nothing happens")
+            return
+        }
+        socket.sendResponse(self)
+        self.socket = nil
     }
     
     public var headerString: String {
-        var string = httpVersion.description + " " + status.description + "\r\n"
+        var string: String = httpVersion.description + " " + status.description + .newline
         
-        if let location = location { string += Header.locationHeader + location + "\r\n" }
-        for cookie in cookies { string += cookie.description + "\r\n" }
-        string += Header.hstsHeader + "\r\n"
-        if let date = lastModifiedDate { string += Header.lastModifiedHeader + Header.httpDateFormater.string(from: date) + "\r\n" }
-        for customHeader in customeHeaders { string += customHeader + "\r\n" }
+        if let location = location { string += Header.locationHeader + location + .newline }
+        for cookie in cookies { string += cookie.description + .newline }
+        string += Header.hstsHeader + .newline
+        if let date = lastModifiedDate { string += Header.lastModifiedHeader + Header.httpDateFormater.string(from: date) + .newline }
+        for customHeader in customeHeaders { string += customHeader + .newline }
         
         switch contentType {
         case .none: ()
-        default: string += contentType.description + "\r\n"
+        default: string += contentType.description + .newline
         }
         
-        string += "Content-Length: \(!omitBody ? body.count : 0)\r\n\r\n"
+        string += "Content-Length: \(!omitBody ? body.count : 0)\(.newline + .newline)"
         return string
     }
     
@@ -61,9 +65,7 @@ public class Response: Message, CustomStringConvertible {
     
     public var description: String {
         var string = headerString
-        
         if !omitBody { string += bodyString }
-        
         return string
     }
 }

@@ -8,4 +8,6 @@ extension String {
     var filterNewlines: String {
         return self.filter{!"\r\n".contains($0)}
     }
+    
+    static var newline: String { return "\r\n" }
 }
