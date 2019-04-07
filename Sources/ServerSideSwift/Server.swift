@@ -2,7 +2,7 @@ import Dispatch
 import Foundation
 import OpenSSL
 
-func alpn_select_callback( _ sslSocket: UnsafeMutablePointer<SSL>?,
+func alpn_select_callback( _ sslSocket: OpaquePointer?,
                            _ out: UnsafeMutablePointer<UnsafePointer<UInt8>?>?,
                            _ outlen: UnsafeMutablePointer<UInt8>?,
                            _ supportedProtocols: UnsafePointer<UInt8>?,
@@ -82,13 +82,12 @@ public class Server {
     private var documentRoot: String = /*CommandLine.arguments[0] +*/ "./static"
     private var endpoints = [(method: Method, url: String, handler: (request: Request, response: Response) -> Void)]()
     
-    private var sslContext: UnsafeMutablePointer<SSL_CTX>!
+    private var sslContext: OpaquePointer!
     
     private func initSSLContext(certificateFile: String, privateKeyFile: String) {
-        SSL_load_error_strings();
-        SSL_library_init();
-        OpenSSL_add_all_digests();
-        sslContext = SSL_CTX_new(TLSv1_2_server_method())
+        OPENSSL_init_ssl(0, nil)
+        OPENSSL_init_crypto(UInt64(OPENSSL_INIT_NO_ADD_ALL_CIPHERS) | UInt64(OPENSSL_INIT_NO_ADD_ALL_DIGESTS), nil)
+        sslContext = SSL_CTX_new(TLS_server_method())
         SSL_CTX_set_alpn_select_cb(sslContext, alpn_select_callback, nil)
         if SSL_CTX_use_certificate_file(sslContext, certificateFile , SSL_FILETYPE_PEM) != 1 {
             fatalError("Failed to use provided certificate file")
