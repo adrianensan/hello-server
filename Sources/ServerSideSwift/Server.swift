@@ -67,6 +67,7 @@ public class Server {
     public var serverName: String = ""
     public var httpPort: UInt16 = 80
     public var httpsPort: UInt16 = 443
+    public var httpPortDebug: UInt16 = 8018
     public var staticDocumentRoot: String {
         get { return documentRoot }
         set { documentRoot = /*CommandLine.arguments[0] +*/ newValue }
@@ -203,7 +204,14 @@ public class Server {
     }
     
     public func start() {
-        if shouldRedirectHttpToHttps {
+      #if DEBUG
+        let httpPort = httpPortDebug
+        let tlsEnabled = false
+      #else
+        let httpPort = httpPort
+        let tlsEnabled = usingTLS
+      #endif
+        if tlsEnabled && shouldRedirectHttpToHttps {
             Router.addServer(host: host,
                              port: httpPort,
                              usingTLS: false,
@@ -211,7 +219,7 @@ public class Server {
                                                                connectionHandling: connectionHandling))
         }
         Router.addServer(host: host,
-                         port: self.usingTLS ? self.httpsPort : self.httpPort,
+                         port: tlsEnabled ? httpsPort : httpPort,
                          usingTLS: usingTLS,
                          server: self)
     }

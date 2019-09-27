@@ -47,11 +47,11 @@ class ServerSocket: Socket {
         var saddr = sockaddr()
         memcpy(&saddr, &addr, MemoryLayout<sockaddr_in>.size)
         guard bind(socketFileDescriptor, &saddr, socklen_t(MemoryLayout<sockaddr_in>.size)) != -1 else {
-            fatalError("bind failed.")
+            fatalError("Failed to bind socket on port \(port).")
         }
         
         guard listen(socketFileDescriptor, ServerSocket.acceptBacklog) != -1 else {
-            fatalError("listen failed.")
+            fatalError("Failed to listen on port \(port).")
         }
     }
     

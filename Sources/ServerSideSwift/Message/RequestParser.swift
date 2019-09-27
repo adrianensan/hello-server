@@ -13,7 +13,7 @@ extension Request {
                     } else if headerLine.starts(with: Header.cookieHeader) {
                         let cookies = headerLine.split(separator: ":", maxSplits: 1)[1].split(separator: ";")
                         for cookieAttribute in cookies {
-                            var parts = cookieAttribute.split(separator: "=", maxSplits: 1)
+                            let parts = cookieAttribute.split(separator: "=", maxSplits: 1)
                             if parts.count == 2 {
                                 let name = parts[0].trimmingCharacters(in: .whitespaces)
                                 let value = parts[1].trimmingCharacters(in: .whitespaces)
