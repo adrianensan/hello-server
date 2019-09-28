@@ -104,6 +104,9 @@ public class Server {
     }
     
     public func useTLS(certificateFile: String, privateKeyFile: String) {
+      #if DEBUG
+        return
+      #endif
         initSSLContext(certificateFile: certificateFile,
                        privateKeyFile: privateKeyFile)
         usingTLS = true
@@ -206,12 +209,11 @@ public class Server {
     public func start() {
       #if DEBUG
         let httpPort = httpPortDebug
-        let tlsEnabled = false
+        connectionHandling = .acceptAll
       #else
         let httpPort = self.httpPort
-        let tlsEnabled = usingTLS
       #endif
-        if tlsEnabled && shouldRedirectHttpToHttps {
+        if usingTLS && shouldRedirectHttpToHttps {
             Router.addServer(host: host,
                              port: httpPort,
                              usingTLS: false,
@@ -219,7 +221,7 @@ public class Server {
                                                                connectionHandling: connectionHandling))
         }
         Router.addServer(host: host,
-                         port: tlsEnabled ? httpsPort : httpPort,
+                         port: usingTLS ? httpsPort : httpPort,
                          usingTLS: usingTLS,
                          server: self)
     }
