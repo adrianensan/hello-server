@@ -208,7 +208,7 @@ public class Server {
         let httpPort = httpPortDebug
         let tlsEnabled = false
       #else
-        let httpPort = httpPort
+        let httpPort = self.httpPort
         let tlsEnabled = usingTLS
       #endif
         if tlsEnabled && shouldRedirectHttpToHttps {
