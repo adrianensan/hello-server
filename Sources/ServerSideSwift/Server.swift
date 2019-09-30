@@ -51,12 +51,12 @@ public class Server {
     }
   
     private func hostRedirectServer(from host: String, withSSL sllFiles: (certificateFile: String, privateKeyFile: String)?) -> Server {
-      let redirectServer = Server(host: self.host)
+      let redirectServer = Server(host: host)
       redirectServer.shouldProvideStaticFiles = false
       redirectServer.connectionHandling = connectionHandling
       redirectServer.addEndpoint(method: .any, url: "*", handler: {request, response in
         response.status = .movedPermanently
-        response.location = "http\(sllFiles != nil ? "s" : "")://" + host + request.url
+        response.location = "http\(sllFiles != nil ? "s" : "")://" + self.host + request.url
         response.complete()
       })
       if let sllFiles = sllFiles {
