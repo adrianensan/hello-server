@@ -35,7 +35,7 @@ public class Server {
     public enum ConnectionHandling {
         case acceptAll
         case acceptMatchingHost
-        case redirectNonMatchingHostToHost
+        case redirectNonMatchingHostToRootHost
     }
     
     public enum AccessControl {
