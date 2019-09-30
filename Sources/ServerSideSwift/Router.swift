@@ -26,14 +26,6 @@ class Router {
               server.handleConnection(socket: newClient)
             } else if let server = routingTable[":\(port)"] {
               server.handleConnection(socket: newClient)
-            } else {
-              for (host, server) in routingTable {
-                print(requestedHost + "    " + host)
-                if server.connectionHandling == .redirectNonMatchingHostToRootHost && requestedHost.hasSuffix(host.split(separator: ":")[0]) {
-                  server.handleConnection(socket: newClient)
-                  break
-                }
-              }
             }
           }
         }

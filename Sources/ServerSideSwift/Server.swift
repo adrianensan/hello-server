@@ -49,15 +49,30 @@ public class Server {
             }
         }
     }
+  
+    private func hostRedirectServer(from host: String, withSSL sllFiles: (certificateFile: String, privateKeyFile: String)?) -> Server {
+      let redirectServer = Server(host: self.host)
+      redirectServer.shouldProvideStaticFiles = false
+      redirectServer.connectionHandling = connectionHandling
+      redirectServer.addEndpoint(method: .any, url: "*", handler: {request, response in
+        response.status = .movedPermanently
+        response.location = "http\(sllFiles != nil ? "s" : "")://" + host + request.url
+        response.complete()
+      })
+      if let sllFiles = sllFiles {
+        redirectServer.useTLS(certificateFile: sllFiles.certificateFile, privateKeyFile: sllFiles.privateKeyFile)
+      }
+      
+      return redirectServer
+    }
     
-    private func httpToHttpsRedirectServer(host: String,
-                                           connectionHandling: ConnectionHandling) -> Server {
+    private func httpToHttpsRedirectServer() -> Server {
         let redirectServer = Server(host: host)
         redirectServer.shouldProvideStaticFiles = false
         redirectServer.connectionHandling = connectionHandling
         redirectServer.addEndpoint(method: .any, url: "*", handler: {request, response in
             response.status = .movedPermanently
-            response.location = "https://" + host + request.url
+          response.location = "https://" + self.host + request.url
             response.complete()
         })
         
@@ -82,6 +97,7 @@ public class Server {
     private var usingTLS = false
     private var documentRoot: String = /*CommandLine.arguments[0] +*/ "./static"
     private var endpoints = [(method: Method, url: String, handler: (request: Request, response: Response) -> Void)]()
+    private var hostRedirects = [(host: String, sllFiles: (certificateFile: String, privateKeyFile: String)?)]()
     
     private var sslContext: UnsafeMutablePointer<SSL_CTX>!
     
@@ -116,6 +132,10 @@ public class Server {
         endpoints.append((method: method,
                           url: url,
                           handler: handler))
+    }
+  
+    func addHostRedirect(from host: String, withSSL sllFiles: (certificateFile: String, privateKeyFile: String)? = nil) {
+      hostRedirects.append((host: host, sllFiles: sllFiles))
     }
     
     func addPageSpecificAccessControl(subDirectory: String, accessControl: AccessControl, responseStatus: ResponseStatus) {
@@ -212,17 +232,33 @@ public class Server {
         connectionHandling = .acceptAll
       #else
         let httpPort = self.httpPort
-      #endif
         if usingTLS && shouldRedirectHttpToHttps {
-            Router.addServer(host: host,
+          Router.addServer(host: host,
+                           port: httpPort,
+                           usingTLS: false,
+                           server: httpToHttpsRedirectServer())
+        }
+      
+        for hostRedirect in hostRedirects {
+          if !usingTLS || shouldRedirectHttpToHttps {
+            Router.addServer(host: hostRedirect.host,
                              port: httpPort,
                              usingTLS: false,
-                             server: httpToHttpsRedirectServer(host: host,
-                                                               connectionHandling: connectionHandling))
+                             server: hostRedirectServer(from: hostRedirect.host, withSSL: nil))
+          }
+          if let sllFiles = hostRedirect.sllFiles, usingTLS {
+            Router.addServer(host: hostRedirect.host,
+                             port: httpsPort,
+                             usingTLS: true,
+                             server: hostRedirectServer(from: hostRedirect.host, withSSL: sllFiles))
+          }
         }
-        Router.addServer(host: host,
-                         port: usingTLS ? httpsPort : httpPort,
-                         usingTLS: usingTLS,
-                         server: self)
+      #endif
+        
+      
+      Router.addServer(host: host,
+                       port: usingTLS ? httpsPort : httpPort,
+                       usingTLS: usingTLS,
+                       server: self)
     }
 }
