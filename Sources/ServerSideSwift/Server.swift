@@ -127,18 +127,18 @@ public class Server {
                        privateKeyFile: privateKeyFile)
         usingTLS = true
     }
+  
+    public func addHostRedirect(from host: String, withSSL sllFiles: (certificateFile: String, privateKeyFile: String)? = nil) {
+        hostRedirects.append((host: host, sllFiles: sllFiles))
+    }
     
-    func addEndpoint(method: Method, url: String, handler: @escaping (Request, Response) -> Void) {
+    public func addEndpoint(method: Method, url: String, handler: @escaping (Request, Response) -> Void) {
         endpoints.append((method: method,
                           url: url,
                           handler: handler))
     }
-  
-    func addHostRedirect(from host: String, withSSL sllFiles: (certificateFile: String, privateKeyFile: String)? = nil) {
-      hostRedirects.append((host: host, sllFiles: sllFiles))
-    }
     
-    func addPageSpecificAccessControl(subDirectory: String, accessControl: AccessControl, responseStatus: ResponseStatus) {
+    public func addPageSpecificAccessControl(subDirectory: String, accessControl: AccessControl, responseStatus: ResponseStatus) {
         pageAccessControl.append((url: subDirectory,
                                   accessControl: accessControl,
                                   responseStatus: responseStatus))
