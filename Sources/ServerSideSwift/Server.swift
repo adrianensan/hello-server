@@ -35,7 +35,6 @@ public class Server {
     public enum ConnectionHandling {
         case acceptAll
         case acceptMatchingHost
-        case redirectNonMatchingHostToRootHost
     }
     
     public enum AccessControl {
@@ -89,7 +88,7 @@ public class Server {
     }
     public var accessControl: AccessControl = .acceptAll(blacklist: [])
     public var pageAccessControl: [(url: String, accessControl: AccessControl, responseStatus: ResponseStatus)] = []
-    public var connectionHandling: ConnectionHandling = .acceptAll
+    public var connectionHandling: ConnectionHandling = .acceptMatchingHost
     public var shouldRedirectHttpToHttps: Bool = false
     public var shouldProvideStaticFiles: Bool = true
     

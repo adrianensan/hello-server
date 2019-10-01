@@ -22,11 +22,13 @@ class ClientSSLSocket: ClientSocket {
     
     override func sendData(data: [UInt8]) {
         var bytesToSend = data.count
+      do {
         repeat {
-            let bytesSent = SSL_write(sslSocket, data, Int32(bytesToSend))
+            let bytesSent = try SSL_write(sslSocket, data, Int32(bytesToSend))
             if bytesSent <= 0 { return }
-            bytesToSend -= Int(bytesSent)
+            bytesToSend -= try Int(bytesSent)
         } while bytesToSend > 0
+      } catch { return }
     }
     
     override func acceptRequest() -> Request? {
