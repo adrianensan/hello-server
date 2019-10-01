@@ -1,4 +1,5 @@
 import Foundation
+import CoreFoundation
 
 class ServerSocket: Socket {
     
@@ -8,14 +9,13 @@ class ServerSocket: Socket {
     static let socketStremType = Int32(SOCK_STREAM.rawValue)
     
     static func hostToNetworkByteOrder(_ port: UInt16) -> UInt16 {
-        return htons(port)
+        return CFSwapInt16(port)
     }
     #else
     static let socketStremType = SOCK_STREAM
     
-    static func hostToNetworkByteOrder(_ port: UInt16) -> in_port_t {
-        let portTemp = in_port_t(port)
-        return Int(OSHostByteOrder()) == OSLittleEndian ? _OSSwapInt16(portTemp) : portTemp
+    static func hostToNetworkByteOrder(_ port: UInt16) -> UInt16 {
+        return Int(OSHostByteOrder()) == OSLittleEndian ? CFSwapInt16(port) : port
     }
     #endif
     

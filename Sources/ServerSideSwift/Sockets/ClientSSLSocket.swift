@@ -10,7 +10,7 @@ class ClientSSLSocket: ClientSocket {
         }
     }*/
     
-    var sslSocket: UnsafeMutablePointer<SSL>!
+    var sslSocket: UnsafeMutablePointer<SSL>?
     
     func initSSLConnection(sslContext: UnsafeMutablePointer<SSL_CTX>) {
         sslSocket = SSL_new(sslContext);
@@ -22,13 +22,11 @@ class ClientSSLSocket: ClientSocket {
     
     override func sendData(data: [UInt8]) {
         var bytesToSend = data.count
-      do {
         repeat {
-            let bytesSent = try SSL_write(sslSocket, data, Int32(bytesToSend))
+            let bytesSent = SSL_write(sslSocket, data, Int32(bytesToSend))
             if bytesSent <= 0 { return }
-            bytesToSend -= try Int(bytesSent)
+            bytesToSend -= Int(bytesSent)
         } while bytesToSend > 0
-      } catch { return }
     }
     
     override func acceptRequest() -> Request? {
