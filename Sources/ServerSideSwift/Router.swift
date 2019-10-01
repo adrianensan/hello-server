@@ -34,6 +34,7 @@ class Router {
       
     routingTable["\(host):\(port)"] = server
     if server.connectionHandling == .acceptAll && routingTable[":\(port)"] == nil { routingTable[":\(port)"] = server }
+    signal(SIGPIPE, SIG_IGN)
   }
 
   static func convertToInt(bytes: [UInt8]) -> Int {

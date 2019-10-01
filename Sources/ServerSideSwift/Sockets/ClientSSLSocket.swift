@@ -23,6 +23,7 @@ class ClientSSLSocket: ClientSocket {
     override func sendData(data: [UInt8]) {
         var bytesToSend = data.count
         repeat {
+          guard let sslSocket = sslSocket else { return }
             let bytesSent = SSL_write(sslSocket, data, Int32(bytesToSend))
             if bytesSent <= 0 { return }
             bytesToSend -= Int(bytesSent)
