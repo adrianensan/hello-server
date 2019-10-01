@@ -14,7 +14,9 @@ public class Response: Message, CustomStringConvertible {
     weak private var socket: ClientSocket?
     
     init(clientSocket: ClientSocket? = nil) {
-        socket = clientSocket
+      socket = clientSocket
+      super.init()
+      if clientSocket is ClientSSLSocket { addCustomHeader(Header.hstsHeader) }
     }
     
     public func add(cookie: Cookie) {
@@ -46,7 +48,6 @@ public class Response: Message, CustomStringConvertible {
         
         if let location = location { string += Header.locationHeader + location + .lineBreak }
         for cookie in cookies { string += cookie.description + .lineBreak }
-        string += Header.hstsHeader + .lineBreak
         if let date = lastModifiedDate { string += Header.lastModifiedHeader + Header.httpDateFormater.string(from: date) + .lineBreak }
         for customHeader in customeHeaders { string += customHeader + .lineBreak }
         
