@@ -38,65 +38,65 @@ class Router {
   }
 
   static func convertToInt(bytes: [UInt8]) -> Int {
-      var result: Int = 0
-      for i in 0..<bytes.count {
-          result += Int(bytes[i]) << (8 * (bytes.count - i - 1))
-      }
-      return result
+    var result: Int = 0
+    for i in 0..<bytes.count {
+      result += Int(bytes[i]) << (8 * (bytes.count - i - 1))
+    }
+    return result
   }
 
   static func getHost(clientHello: [UInt8]) -> String {
-      var pos = 0
-      pos += 1 // Type
-      pos += 2 // Version
-      pos += 2 // Length
-      
-      pos += 1 // Handshake Type
-      pos += 3 // Length
-      pos += 2 // Version
-      
-      pos += 32 // Random
-      
-      if clientHello.count > pos + 1 { // SessionID
-          pos += 1 + Int(clientHello[pos])
-      }
-      
-      if clientHello.count > pos + 2 { // CipherSuite
-          pos += 2 + convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
-      }
-      
-      if clientHello.count > pos + 1 { // Compression
-          pos += 1 + Int(clientHello[pos])
-      }
-      
-      pos += 2 // Extensions
-      
-      while clientHello.count > pos + 8 { // Extensions
-          let extensionType = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
+    var pos = 0
+    pos += 1 // Type
+    pos += 2 // Version
+    pos += 2 // Length
+    
+    pos += 1 // Handshake Type
+    pos += 3 // Length
+    pos += 2 // Version
+    
+    pos += 32 // Random
+    
+    if clientHello.count > pos + 1 { // SessionID
+      pos += 1 + Int(clientHello[pos])
+    }
+    
+    if clientHello.count > pos + 2 { // CipherSuite
+      pos += 2 + convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
+    }
+    
+    if clientHello.count > pos + 1 { // Compression
+      pos += 1 + Int(clientHello[pos])
+    }
+    
+    pos += 2 // Extensions
+    
+    while clientHello.count > pos + 8 { // Extensions
+      let extensionType = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
+      pos += 2
+      let extensionLength = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
+      pos += 2
+      if extensionType == TLSEXT_TYPE_server_name {
+        let listLength = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
+        pos += 2
+        if clientHello.count >= pos + listLength && clientHello[pos] == 0 {
+          pos += 1
+          let serverNameLength = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
           pos += 2
-          let extensionLength = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
-          pos += 2
-          if extensionType == TLSEXT_TYPE_server_name {
-              let listLength = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
-              pos += 2
-              if clientHello.count >= pos + listLength && clientHello[pos] == 0 {
-                  pos += 1
-                  let serverNameLength = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
-                  pos += 2
-                  if clientHello.count >= pos + serverNameLength {
-                      let serverNameData: Data = Data([UInt8](clientHello[pos..<(pos + serverNameLength)]))
-                      return String(data: serverNameData, encoding: .utf8) ?? ""
-                  } else {
-                      return ""
-                  }
-              } else {
-                  return ""
-              }
+          if clientHello.count >= pos + serverNameLength {
+            let serverNameData: Data = Data([UInt8](clientHello[pos..<(pos + serverNameLength)]))
+            return String(data: serverNameData, encoding: .utf8) ?? ""
           } else {
-              pos += extensionLength
+            return ""
           }
+        } else {
+          return ""
+        }
+      } else {
+        pos += extensionLength
       }
-      
-      return ""
+    }
+    
+    return ""
   }
 }
