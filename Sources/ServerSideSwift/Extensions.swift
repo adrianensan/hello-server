@@ -6,7 +6,9 @@ extension String {
   
   var data: Data { return data(using: .utf8) ?? Data() }
   
-  var filterNewlines: String { return filter{!String.lineBreak.contains($0)}}
+  var filterNewlines: String { return filter{ !String.lineBreak.contains($0) } }
+  
+  var trimWhitespace: String { return trimmingCharacters(in: .whitespaces) }
 }
 
 extension Array where Element == UInt8 {

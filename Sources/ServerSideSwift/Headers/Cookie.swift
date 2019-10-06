@@ -14,49 +14,20 @@ public struct Cookie: CustomStringConvertible {
     }
   }
   
-  public var name: String
-  public var value: String
-  public var domain: String?
-  public var path: String?
-  public var secure: Bool
-  public var httpOnly: Bool
-  public var sameSite: SameSiteType?
-  private var expiry: TimeInterval?
-  private var maxAge: Double?
-  private var customValues: [String]
+  public let name: String
+  public let value: String
+  public let domain: String?
+  public let path: String?
+  public let secure: Bool
+  public let httpOnly: Bool
+  public let sameSite: SameSiteType?
+  public let expiry: TimeInterval?
+  public let customValues: [String]
   
-  public init(name: String,
-              value: String,
-              expiry: TimeInterval? = nil,
-              maxAge: Double? = nil,
-              domain: String?,
-              path: String?,
-              httpOnly: Bool = false,
-              secure: Bool = false,
-              sameSite: SameSiteType? = nil) {
-    self.name = name
-    self.value = value
-    self.expiry = expiry
-    self.maxAge = maxAge
-    self.domain = domain
-    self.path = path
-    self.secure = secure
-    self.httpOnly = httpOnly
-    self.sameSite = sameSite
-    customValues = [String]()
+  public var maxAge: TimeInterval? {
+    if let expiry = expiry { return expiry - Date().timeIntervalSince1970 }
+    return nil
   }
-  
-  mutating public func setExpiry(secondsFrom1970: TimeInterval) {
-    expiry = secondsFrom1970
-    maxAge = secondsFrom1970 - Date().timeIntervalSince1970
-  }
-  
-  mutating public func setExpiry(secondsFromNow: Double) {
-    expiry = Date().timeIntervalSince1970 + secondsFromNow
-    maxAge = secondsFromNow
-  }
-  
-  mutating public func addCustom(_ value: String) { customValues.append(value) }
   
   public var description: String {
     var string: String = Header.setCookiePrefix

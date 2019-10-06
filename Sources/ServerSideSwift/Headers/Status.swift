@@ -133,6 +133,11 @@ public enum ResponseStatus {
     }
   }
   
+  static func from(code: String) -> ResponseStatus {
+    if let intCode = Int(code) { return from(code: intCode) }
+    else { return .custom(code: 0, message: "Unkown") }
+  }
+  
   static func from(code: Int) -> ResponseStatus {
     switch code {
     case 100: return .continue

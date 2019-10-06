@@ -3,7 +3,7 @@ import Foundation
 extension Request {
   static func parse(data: [UInt8]) -> Request? {
     var requestBuilder: RequestBuilder?
-    guard let headerEnd = Request.findHeaderEnd(data: data) else { return nil }
+    guard let headerEnd = Message.findHeaderEnd(data: data) else { return nil }
     let headerFields = data[..<headerEnd].split(separator: 10)
     for headerField in headerFields {
       if let headerLine = String(data: Data(headerField), encoding: .utf8) {
@@ -38,15 +38,5 @@ extension Request {
     }
     
     return requestBuilder?.finalizedRequest
-  }
-  
-  static func findHeaderEnd(data: [UInt8]) -> Int? {
-    for i in 0..<(data.count - 1) {
-      if data[i] == 10 && data[i + 1] == 10 {
-        return i
-      }
-    }
-    
-    return nil
   }
 }
