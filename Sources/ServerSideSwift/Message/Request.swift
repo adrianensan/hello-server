@@ -1,16 +1,14 @@
 import Foundation
 
-public class Request: Message, CustomStringConvertible {
+public struct Request: CustomStringConvertible {
     
-  public internal(set) var method: Method
-  public internal(set) var url: String
-  public internal(set) var host: String?
-  public internal(set) var cookies: [String: String] = [:]
+  public let method: Method
+  public let url: String
+  public let host: String?
+  public let cookies: [String: String]
+  public let body: Data?
   
-  init(method: Method, url: String) {
-    self.method = method
-    self.url = url
-  }
+  public var bodyAsString: String? { if let body = body { return String(data: body, encoding: .utf8) } else { return nil } }
   
   public var description: String {
     return
@@ -18,7 +16,7 @@ public class Request: Message, CustomStringConvertible {
       \(method) \(url)\n
       Host: \(host ?? "Not Set")
        
-      \(bodyString)
+      \(bodyAsString ?? "")
       """
   }
 }

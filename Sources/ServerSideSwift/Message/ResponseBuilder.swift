@@ -1,6 +1,6 @@
 import Foundation
 
-public class ResponseBuilder: Message {
+public class ResponseBuilder: Message, CustomStringConvertible {
     
   public var status: ResponseStatus = .ok
   var cookies: [Cookie] = []
@@ -50,5 +50,5 @@ public class ResponseBuilder: Message {
     self.socket = nil
   }
   
-  
+  public var description: String { return finalizedResponse.description }
 }

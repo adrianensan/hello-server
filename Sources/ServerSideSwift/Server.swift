@@ -157,6 +157,8 @@ public class Server {
   func staticFileHandler(request: Request, responseBuilder: ResponseBuilder) {
     var url: String = staticDocumentRoot + request.url
     
+    if request.method == .head { responseBuilder.omitBody = true }
+    
     if let file = try? Data(contentsOf: URL(fileURLWithPath: url)) {
       var fileExtension = ""
       let splits = url.split(separator: "/", omittingEmptySubsequences: true)
@@ -203,11 +205,6 @@ public class Server {
       guard case .ok = responseBuilder.status else {
         responseBuilder.complete()
         continue
-      }
-      
-      if request.method == .head {
-        responseBuilder.omitBody = true
-        request.method = .get
       }
       
       if let handler = getHandlerFor(method: request.method, url: request.url) { handler(request, responseBuilder) }
