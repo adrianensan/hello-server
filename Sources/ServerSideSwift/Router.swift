@@ -4,8 +4,8 @@ import OpenSSL
 
 class Router {
 
-  static var routingTable = [String: Server]()
-  static var listeningPorts = [UInt16: ServerSocket]()
+  static var routingTable: [String: Server] = [:]
+  static var listeningPorts: [UInt16: ServerSocket] = [:]
 
   static func addServer(host: String, port: UInt16, usingTLS: Bool, server: Server) {
     Security.startSecurityMonitor()
@@ -21,12 +21,9 @@ class Router {
             } else if let firstPacket = newClient.peakPacket() {
               requestedHost = firstPacket.host ?? ""
             }
-          
-            if let server = routingTable["\(requestedHost):\(port)"] {
-              server.handleConnection(socket: newClient)
-            } else if let server = routingTable[":\(port)"] {
-              server.handleConnection(socket: newClient)
-            }
+            
+            let server = routingTable["\(requestedHost):\(port)"] ?? routingTable[":\(port)"]
+            server?.handleConnection(socket: newClient)
           }
         }
       }
@@ -35,14 +32,6 @@ class Router {
     routingTable["\(host):\(port)"] = server
     if server.ignoreRequestHostChecking && routingTable[":\(port)"] == nil { routingTable[":\(port)"] = server }
     signal(SIGPIPE, SIG_IGN)
-  }
-
-  static func convertToInt(bytes: [UInt8]) -> Int {
-    var result: Int = 0
-    for i in 0..<bytes.count {
-      result += Int(bytes[i]) << (8 * (bytes.count - i - 1))
-    }
-    return result
   }
 
   static func getHost(clientHello: [UInt8]) -> String {
@@ -62,7 +51,7 @@ class Router {
     }
     
     if clientHello.count > pos + 2 { // CipherSuite
-      pos += 2 + convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
+      pos += 2 + [UInt8](clientHello[pos..<(pos + 2)]).intValue
     }
     
     if clientHello.count > pos + 1 { // Compression
@@ -72,16 +61,16 @@ class Router {
     pos += 2 // Extensions
     
     while clientHello.count > pos + 8 { // Extensions
-      let extensionType = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
+      let extensionType = [UInt8](clientHello[pos..<(pos + 2)]).intValue
       pos += 2
-      let extensionLength = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
+      let extensionLength = [UInt8](clientHello[pos..<(pos + 2)]).intValue
       pos += 2
       if extensionType == TLSEXT_TYPE_server_name {
-        let listLength = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
+        let listLength = [UInt8](clientHello[pos..<(pos + 2)]).intValue
         pos += 2
         if clientHello.count >= pos + listLength && clientHello[pos] == 0 {
           pos += 1
-          let serverNameLength = convertToInt(bytes: [UInt8](clientHello[pos..<(pos + 2)]))
+          let serverNameLength = [UInt8](clientHello[pos..<(pos + 2)]).intValue
           pos += 2
           if clientHello.count >= pos + serverNameLength {
             let serverNameData: Data = Data([UInt8](clientHello[pos..<(pos + serverNameLength)]))

@@ -5,7 +5,7 @@ public class Request: Message, CustomStringConvertible {
   public internal(set) var method: Method
   public internal(set) var url: String
   public internal(set) var host: String?
-  public internal(set) var cookies: [String: String] = [String: String]()
+  public internal(set) var cookies: [String: String] = [:]
   
   init(method: Method, url: String) {
     self.method = method

@@ -14,15 +14,15 @@ public struct Cookie: CustomStringConvertible {
     }
   }
   
-  private var name: String
-  private var value: String
+  public var name: String
+  public var value: String
+  public var domain: String?
+  public var path: String?
+  public var secure: Bool
+  public var httpOnly: Bool
+  public var sameSite: SameSiteType?
   private var expiry: TimeInterval?
   private var maxAge: Double?
-  private var domain: String?
-  private var path: String?
-  private var secure: Bool
-  private var httpOnly: Bool
-  private var sameSite: SameSiteType?
   private var customValues: [String]
   
   public init(name: String,
@@ -46,21 +46,16 @@ public struct Cookie: CustomStringConvertible {
     customValues = [String]()
   }
   
-  mutating public func setName(_ val: String) { name = val.filterNewlines }
-  mutating public func setValue(_ val: String) { value = val.filterNewlines }
-  mutating public func setExpiry(timeIntervalSince1970: TimeInterval) {
-    expiry = timeIntervalSince1970
-    maxAge = timeIntervalSince1970 - Date().timeIntervalSince1970
+  mutating public func setExpiry(secondsFrom1970: TimeInterval) {
+    expiry = secondsFrom1970
+    maxAge = secondsFrom1970 - Date().timeIntervalSince1970
   }
+  
   mutating public func setExpiry(secondsFromNow: Double) {
     expiry = Date().timeIntervalSince1970 + secondsFromNow
     maxAge = secondsFromNow
   }
-  mutating public func setDomain(_ val: String) { domain = val.filterNewlines }
-  mutating public func setPath(_ val: String) { path = val.filterNewlines }
-  mutating public func setSecure(_ val: Bool) { secure = val }
-  mutating public func setHTTPOnly(_ val: Bool) { httpOnly = val }
-  mutating public func setSameSite(_ val: SameSiteType) { sameSite = val }
+  
   mutating public func addCustom(_ value: String) { customValues.append(value.filterNewlines) }
   
   public var description: String {

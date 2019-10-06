@@ -28,6 +28,11 @@ func alpn_select_callback( _ sslSocket: UnsafeMutablePointer<SSL>?,
   return SSL_TLSEXT_ERR_NOACK
 }
 
+public struct SSLFiles {
+  let certificate: String
+  let privateKey: String
+}
+
 public class Server {
     
   static let supportedHTTPVersions: [String] = ["http/1.1"]
@@ -44,17 +49,15 @@ public class Server {
     }
   }
 
-  private func hostRedirectServer(from host: String, withSSL sllFiles: (certificateFile: String, privateKeyFile: String)?) -> Server {
+  private func hostRedirectServer(from host: String, withSSL sslFiles: SSLFiles?) -> Server {
     let redirectServer = Server(host: host)
     redirectServer.shouldProvideStaticFiles = false
-    redirectServer.addEndpoint(method: .any, url: "*", handler: {request, response in
+    redirectServer.addEndpoint(method: .any, url: "*", handler: { request, response in
       response.status = .movedPermanently
-      response.location = "http\(sllFiles != nil ? "s" : "")://" + self.host + request.url
+      response.location = "http\(sslFiles != nil ? "s" : "")://" + self.host + request.url
       response.complete()
     })
-    if let sllFiles = sllFiles {
-      redirectServer.useTLS(certificateFile: sllFiles.certificateFile, privateKeyFile: sllFiles.privateKeyFile)
-    }
+    if let sslFiles = sslFiles { redirectServer.useTLS(sslFiles: sslFiles) }
     
     return redirectServer
   }
@@ -80,30 +83,31 @@ public class Server {
   public var httpPort: UInt16 { get { return httpPortDebug } set {} }
   public var shouldRedirectHttpToHttps: Bool { get { return true } set {} }
   public var ignoreRequestHostChecking: Bool { get { return true } set {} }
+  private var hostRedirects: [(host: String, sllFiles: SSLFiles?)] { get { return [] } set {} }
   #else
   public var httpPort: UInt16 = 80
   public var ignoreRequestHostChecking: Bool = false
   public var shouldRedirectHttpToHttps: Bool = false
+  private var hostRedirects: [(host: String, sllFiles: SSLFiles?)] = []
   #endif
   
   private var host: String
   private var usingTLS = false
   private var endpoints = [(method: Method, url: String, handler: (request: Request, response: Response) -> Void)]()
-  private var hostRedirects = [(host: String, sllFiles: (certificateFile: String, privateKeyFile: String)?)]()
   private var urlAccessControl: [(url: String, accessControl: AccessControl, responseStatus: ResponseStatus)] = []
   
   private var sslContext: UnsafeMutablePointer<SSL_CTX>!
   
-  private func initSSLContext(certificateFile: String, privateKeyFile: String) {
+  private func initSSLContext(sslFiles: SSLFiles) {
     SSL_load_error_strings();
     SSL_library_init();
     OpenSSL_add_all_digests();
     sslContext = SSL_CTX_new(TLSv1_2_server_method())
     SSL_CTX_set_alpn_select_cb(sslContext, alpn_select_callback, nil)
-    if SSL_CTX_use_certificate_file(sslContext, certificateFile , SSL_FILETYPE_PEM) != 1 {
+    if SSL_CTX_use_certificate_file(sslContext, sslFiles.certificate , SSL_FILETYPE_PEM) != 1 {
       fatalError("Failed to use provided certificate file")
     }
-    if SSL_CTX_use_PrivateKey_file(sslContext, privateKeyFile, SSL_FILETYPE_PEM) != 1 {
+    if SSL_CTX_use_PrivateKey_file(sslContext, sslFiles.privateKey, SSL_FILETYPE_PEM) != 1 {
       fatalError("Failed to use provided preivate key file")
     }
   }
@@ -112,15 +116,14 @@ public class Server {
     self.host = host
   }
   
-  public func useTLS(certificateFile: String, privateKeyFile: String) {
+  public func useTLS(sslFiles: SSLFiles) {
     #if !(DEBUG)
-    initSSLContext(certificateFile: certificateFile,
-                   privateKeyFile: privateKeyFile)
+    initSSLContext(sslFiles)
     usingTLS = true
     #endif
   }
 
-  public func addHostRedirect(from host: String, withSSL sllFiles: (certificateFile: String, privateKeyFile: String)? = nil) {
+  public func addHostRedirect(from host: String, withSSL sllFiles: SSLFiles? = nil) {
     hostRedirects.append((host: host, sllFiles: sllFiles))
   }
   
@@ -219,10 +222,6 @@ public class Server {
   }
   
   public func start() {
-    #if DEBUG
-    let httpPort = httpPortDebug
-    #else
-    let httpPort = self.httpPort
     if usingTLS && shouldRedirectHttpToHttps {
       Router.addServer(host: host,
                        port: httpPort,
@@ -244,7 +243,6 @@ public class Server {
                          server: hostRedirectServer(from: hostRedirect.host, withSSL: sllFiles))
       }
     }
-    #endif
     
     Router.addServer(host: host,
                      port: usingTLS ? httpsPort : httpPort,

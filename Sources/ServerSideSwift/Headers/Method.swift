@@ -9,7 +9,7 @@ public enum Method {
   case any
   case unknown
   
-  static func inferFrom(string: String) -> Method {
+  static func infer(from string: String) -> Method {
     switch string {
     case "get": return .get
     case "head": return .head

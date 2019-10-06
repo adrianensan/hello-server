@@ -24,7 +24,7 @@ extension Request {
         } else {
           let segments = headerLine.lowercased().split(separator: " ")
           if segments.count == 3 && segments[2].starts(with: "http/") {
-            request = Request(method: Method.inferFrom(string: String(segments[0])), url: String(segments[1]))
+            request = Request(method: Method.infer(from: String(segments[0])), url: String(segments[1]))
           }
         }
       }

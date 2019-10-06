@@ -4,8 +4,8 @@ public class Response: Message, CustomStringConvertible {
     
   var httpVersion: HTTPVersion = .http1_1
   public var status: ResponseStatus = .ok
-  var cookies: [Cookie] = [Cookie]()
-  var customeHeaders: [String] = [String]()
+  var cookies: [Cookie] = []
+  var customeHeaders: [String] = []
   public var contentType: ContentType = .none
   public var location: String?
   public var lastModifiedDate: Date?
