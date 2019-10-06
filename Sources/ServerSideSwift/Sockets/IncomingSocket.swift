@@ -23,7 +23,7 @@ class ClientSocket: Socket  {
   func peakRawData() -> [UInt8]? {
     var requestBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
     while true {
-      let bytesRead = Int(recv(socketFileDescriptor, &requestBuffer, Socket.bufferSize, Int32(MSG_PEEK)))
+      let bytesRead = recv(socketFileDescriptor, &requestBuffer, Socket.bufferSize, Int32(MSG_PEEK))
       guard bytesRead > 0 else { return nil }
       return [UInt8](requestBuffer[..<bytesRead])
     }

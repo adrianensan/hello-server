@@ -8,6 +8,8 @@ class Header {
   static let lastModifiedPrefix = "Last-Modified: "
   static let hstsPrefix = "Strict-Transport-Security: max-age=31536000; includeSubDomains"
   static let contentTypePrefix = "Content-Type: "
+  static let contentLengthPrefix = "Content-Length: "
+  static let HostPrefix = "Host: "
 
   static let httpDateFormater: DateFormatter = {
     let dateFormatter = DateFormatter()

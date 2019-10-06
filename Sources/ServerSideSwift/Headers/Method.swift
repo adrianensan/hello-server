@@ -1,4 +1,4 @@
-public enum Method {
+public enum Method: CustomStringConvertible {
   case get
   case head
   case post
@@ -19,6 +19,19 @@ public enum Method {
     case "patch": return .patch
     case "options": return .options
     default: return .unknown
+    }
+  }
+  
+  public var description: String {
+    switch self {
+    case .get: return "GET"
+    case .head: return "HEAD"
+    case .post: return "POST"
+    case .put: return "PUT"
+    case .delete: return "DELETE"
+    case .patch: return "PATCH"
+    case .options: return "OPTIONS"
+    default: return "UNKOWN"
     }
   }
 }

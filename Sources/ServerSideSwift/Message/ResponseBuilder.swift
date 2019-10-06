@@ -3,12 +3,12 @@ import Foundation
 public class ResponseBuilder: Message, CustomStringConvertible {
     
   public var status: ResponseStatus = .ok
-  var cookies: [Cookie] = []
-  var customeHeaders: [String] = []
   public var contentType: ContentType = .none
   public var location: String?
   public var lastModifiedDate: Date?
   public var omitBody: Bool = false
+  private var cookies: [Cookie] = []
+  private var customeHeaders: [String] = []
 
   weak private var socket: ClientSocket?
   

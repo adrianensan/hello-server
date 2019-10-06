@@ -8,7 +8,7 @@ extension Request {
     for headerField in headerFields {
       if let headerLine = String(data: Data(headerField), encoding: .utf8) {
         if let requestBuilder = requestBuilder {
-          if headerLine.starts(with: "Host: ") {
+          if headerLine.lowercased().starts(with: Header.HostPrefix.lowercased()) {
             requestBuilder.host = headerLine.split(separator: ":", maxSplits: 1)[1].trimmingCharacters(in: .whitespaces)
           } else if headerLine.starts(with: Header.cookiePrefix) {
             let cookies = headerLine.split(separator: ":", maxSplits: 1)[1].split(separator: ";")

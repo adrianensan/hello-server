@@ -28,14 +28,14 @@ public struct Response: CustomStringConvertible {
       default: string += contentType.description + .lineBreak
       }
       
-      string += "Content-Length: \(body.count)" + .lineBreak
+      string += "\(Header.contentLengthPrefix)\(body.count)" + .lineBreak
     }
     return string + .lineBreak
   }
   
   var data: Data {
     var data = Data(headerString.utf8)
-    if let body = body { data += body }
+    if let body = body { data += body + Data((.lineBreak + .lineBreak).utf8) }
     return data
   }
   

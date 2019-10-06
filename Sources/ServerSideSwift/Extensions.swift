@@ -9,6 +9,7 @@ extension String {
   var filterNewlines: String { return filter{ !String.lineBreak.contains($0) } }
   
   var trimWhitespace: String { return trimmingCharacters(in: .whitespaces) }
+  var trimNewlines: String { return trimmingCharacters(in: .newlines) }
 }
 
 extension Array where Element == UInt8 {

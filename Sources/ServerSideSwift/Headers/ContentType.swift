@@ -1,4 +1,13 @@
 public enum ContentType: CustomStringConvertible {
+  
+  static var allCases: [ContentType] {
+    return [.plain, .html, .css, .csv, .javascript, .ics, .otf, .ttf, .woff, .woff2, .png, .jpeg, .tiff,
+            .gif, .webpImage, .svg, .icon, .aac, .oggAudio, .webmAudio, .wav, .midi, .x3GPP, .x3GPP2,
+            .avi, .mpeg, .oggVideo, .webmVideo, .json, .xhtml, .xml, .xul, .pdf, .rtf, .oldWord,
+            .oldPowerpoint, .oldExcel, .word, .powerpoint, .excel, .epub, .sh, .typescript, .es,
+            .eot, .zip, .tar, .rar, .bz, .bz2, .x7zip, .jar, .ogg, .bin, .other]
+  }
+  
   case none
   case plain
   case html
@@ -116,6 +125,13 @@ public enum ContentType: CustomStringConvertible {
     case   .bin, .other: return "application/octet-stream"
     case .custom(let s): return s
     }
+  }
+  
+  static func fromHeader(string: String) -> ContentType {
+    for type in ContentType.allCases {
+      if type.typeString == string { return type }
+    }
+    return custom(type: string)
   }
   
   static func from(fileExtension: String) -> ContentType {
