@@ -31,6 +31,11 @@ func alpn_select_callback( _ sslSocket: UnsafeMutablePointer<SSL>?,
 public struct SSLFiles {
   let certificate: String
   let privateKey: String
+  
+  public init(certificate: String, privateKey: String) {
+    self.certificate = certificate
+    self.privateKey = privateKey
+  }
 }
 
 public class Server {
