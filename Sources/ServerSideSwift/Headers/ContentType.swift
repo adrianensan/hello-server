@@ -57,8 +57,6 @@ public enum ContentType: CustomStringConvertible {
   case other
   case custom(type: String)
   
-  static let baseString = "Content-Type: "
-  
   var typeString: String {
     switch self {
     case          .none: return ""
@@ -182,6 +180,6 @@ public enum ContentType: CustomStringConvertible {
   }
   
   public var description: String {
-    return ContentType.baseString + typeString
+    return Header.contentTypePrefix + typeString
   }
 }

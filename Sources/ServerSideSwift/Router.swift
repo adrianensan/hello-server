@@ -35,7 +35,7 @@ class Router {
   }
 
   static func getHost(clientHello: [UInt8]) -> String {
-    var pos = 0
+    var pos: Int = 0
     pos += 1 // Type
     pos += 2 // Version
     pos += 2 // Length

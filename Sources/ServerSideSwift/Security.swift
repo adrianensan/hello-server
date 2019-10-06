@@ -5,8 +5,8 @@ public struct Security {
   public static var isEnabled: Bool = false
   public static var maxConnectionPerClient: Int = 20
   private static var hasStarted: Bool = false
-  private static var openConnections = [String: Int]()
-  private static var clientReputation = [String: Double]()
+  private static var openConnections: [String: Int] = [:]
+  private static var clientReputation: [String: Double] = [:]
   
   static func shouldAllowConnection(from ipAddress: String) -> Bool {
     guard isEnabled else { return true }

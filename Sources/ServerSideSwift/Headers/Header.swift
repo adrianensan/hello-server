@@ -1,12 +1,13 @@
 import Foundation
 
 class Header {
-  static let serverHeader = "Server: adrian-ensan-server"
-  static let locationHeader = "Location: "
-  static let cookieHeader = "Cookie: "
-  static let setCookieHeader = "Set-Cookie: "
-  static let lastModifiedHeader = "Last-Modified: "
-  static let hstsHeader = "Strict-Transport-Security: max-age=31536000; includeSubDomains"
+  static let serverPrefix = "Server: adrian-ensan-server"
+  static let locationPrefix = "Location: "
+  static let cookiePrefix = "Cookie: "
+  static let setCookiePrefix = "Set-Cookie: "
+  static let lastModifiedPrefix = "Last-Modified: "
+  static let hstsPrefix = "Strict-Transport-Security: max-age=31536000; includeSubDomains"
+  static let contentTypePrefix = "Content-Type: "
 
   static let httpDateFormater: DateFormatter = {
     let dateFormatter = DateFormatter()

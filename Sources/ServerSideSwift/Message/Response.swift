@@ -1,72 +1,47 @@
 import Foundation
 
-public class Response: Message, CustomStringConvertible {
-    
-  var httpVersion: HTTPVersion = .http1_1
-  public var status: ResponseStatus = .ok
-  var cookies: [Cookie] = []
-  var customeHeaders: [String] = []
-  public var contentType: ContentType = .none
-  public var location: String?
-  public var lastModifiedDate: Date?
-  public var omitBody: Bool = false
+public struct Response: CustomStringConvertible {
 
-  weak private var socket: ClientSocket?
+  public let httpVersion: HTTPVersion = .http1_1
+  public let status: ResponseStatus
+  public let cookies: [Cookie]
+  public let customeHeaders: [String]
+  public let contentType: ContentType
+  public let location: String?
+  public let lastModifiedDate: Date?
+  public let omitBody: Bool = false
+  public let body: Data?
   
-  init(clientSocket: ClientSocket? = nil) {
-    socket = clientSocket
-    super.init()
-    if clientSocket is ClientSSLSocket { addCustomHeader(Header.hstsHeader) }
-  }
+  public var bodyAsString: String? { if let body = body { return String(data: body, encoding: .utf8) } else { return nil } }
   
-  public func add(cookie: Cookie) {
-    cookies.append(cookie)
-  }
-  
-  public func addCustomHeader(_ line: String) {
-    customeHeaders.append(line.filterNewlines)
-  }
-  
-  public func setBodyJSON<T: Encodable>(object: T, append: Bool = false) {
-    if let json = try? JSONEncoder().encode(object) {
-      if append { body += json }
-      else { body = json }
-    }
-  }
-  
-  public func complete() {
-    guard let socket = socket else {
-      print("Attempted to complete a response after it was already sent, don't do this, nothing happens")
-      return
-    }
-    socket.sendResponse(self)
-    self.socket = nil
-  }
-  
-  public var headerString: String {
+  private var headerString: String {
     var string: String = httpVersion.description + " " + status.description + .lineBreak
     
-    if let location = location { string += Header.locationHeader + location + .lineBreak }
+    if let location = location { string += Header.locationPrefix + location + .lineBreak }
     for cookie in cookies { string += cookie.description + .lineBreak }
-    if let date = lastModifiedDate { string += Header.lastModifiedHeader + Header.httpDateFormater.string(from: date) + .lineBreak }
+    if let date = lastModifiedDate { string += Header.lastModifiedPrefix + Header.httpDateFormater.string(from: date) + .lineBreak }
     for customHeader in customeHeaders { string += customHeader + .lineBreak }
     
-    switch contentType {
-    case .none: ()
-    default: string += contentType.description + .lineBreak
+    if let body = body {
+      switch contentType {
+      case .none: break
+      default: string += contentType.description + .lineBreak
+      }
+      
+      string += "Content-Length: \(body.count)" + .lineBreak
     }
-    
-    string += "Content-Length: \(!omitBody ? body.count : 0)\(.lineBreak + .lineBreak)"
-    return string
+    return string + .lineBreak
   }
   
-  public var responseData: Data {
-    return Data(headerString.utf8) + body
+  var responseData: Data {
+    var data = Data(headerString.utf8)
+    if let body = body { data += body }
+    return data
   }
   
   public var description: String {
     var string = headerString
-    if !omitBody { string += bodyString }
+    if let bodyString = bodyAsString { string += bodyString }
     return string
   }
 }

@@ -34,12 +34,12 @@ public struct Cookie: CustomStringConvertible {
               httpOnly: Bool = false,
               secure: Bool = false,
               sameSite: SameSiteType? = nil) {
-    self.name = name.filterNewlines
-    self.value = value.filterNewlines
+    self.name = name
+    self.value = value
     self.expiry = expiry
     self.maxAge = maxAge
-    self.domain = domain?.filterNewlines
-    self.path = path?.filterNewlines
+    self.domain = domain
+    self.path = path
     self.secure = secure
     self.httpOnly = httpOnly
     self.sameSite = sameSite
@@ -56,10 +56,10 @@ public struct Cookie: CustomStringConvertible {
     maxAge = secondsFromNow
   }
   
-  mutating public func addCustom(_ value: String) { customValues.append(value.filterNewlines) }
+  mutating public func addCustom(_ value: String) { customValues.append(value) }
   
   public var description: String {
-    var string: String = Header.setCookieHeader
+    var string: String = Header.setCookiePrefix
     string += "\(name)=\(value)"
     if let expiry = expiry { string += "Expiry=\(Header.httpDateFormater.string(from: Date(timeIntervalSince1970: expiry)))" }
     if let maxAge = maxAge { string += "Max-Age=\(maxAge)" }

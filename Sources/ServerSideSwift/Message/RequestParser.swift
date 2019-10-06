@@ -10,7 +10,7 @@ extension Request {
         if let request = request {
           if headerLine.starts(with: "Host: ") {
             request.host = headerLine.split(separator: ":", maxSplits: 1)[1].trimmingCharacters(in: .whitespaces)
-          } else if headerLine.starts(with: Header.cookieHeader) {
+          } else if headerLine.starts(with: Header.cookiePrefix) {
             let cookies = headerLine.split(separator: ":", maxSplits: 1)[1].split(separator: ";")
             for cookieAttribute in cookies {
               let parts = cookieAttribute.split(separator: "=", maxSplits: 1)

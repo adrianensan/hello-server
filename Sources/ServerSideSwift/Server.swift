@@ -52,10 +52,10 @@ public class Server {
   private func hostRedirectServer(from host: String, withSSL sslFiles: SSLFiles?) -> Server {
     let redirectServer = Server(host: host)
     redirectServer.shouldProvideStaticFiles = false
-    redirectServer.addEndpoint(method: .any, url: "*", handler: { request, response in
-      response.status = .movedPermanently
-      response.location = "http\(sslFiles != nil ? "s" : "")://" + self.host + request.url
-      response.complete()
+    redirectServer.addEndpoint(method: .any, url: "*", handler: { request, responseBuilder in
+      responseBuilder.status = .movedPermanently
+      responseBuilder.location = "http\(sslFiles != nil ? "s" : "")://" + self.host + request.url
+      responseBuilder.complete()
     })
     if let sslFiles = sslFiles { redirectServer.useTLS(sslFiles: sslFiles) }
     
@@ -65,10 +65,10 @@ public class Server {
   private func httpToHttpsRedirectServer() -> Server {
     let redirectServer = Server(host: host)
     redirectServer.shouldProvideStaticFiles = false
-    redirectServer.addEndpoint(method: .any, url: "*", handler: {request, response in
-      response.status = .movedPermanently
-      response.location = "https://" + self.host + request.url
-      response.complete()
+    redirectServer.addEndpoint(method: .any, url: "*", handler: {request, responseBuilder in
+      responseBuilder.status = .movedPermanently
+      responseBuilder.location = "https://" + self.host + request.url
+      responseBuilder.complete()
     })
     
     return redirectServer
@@ -92,8 +92,8 @@ public class Server {
   #endif
   
   private var host: String
-  private var usingTLS = false
-  private var endpoints = [(method: Method, url: String, handler: (request: Request, response: Response) -> Void)]()
+  private var usingTLS: Bool = false
+  private var endpoints: [(method: Method, url: String, handler: (_ request: Request, _ response: ResponseBuilder) -> Void)] = []
   private var urlAccessControl: [(url: String, accessControl: AccessControl, responseStatus: ResponseStatus)] = []
   
   private var sslContext: UnsafeMutablePointer<SSL_CTX>!
@@ -127,7 +127,7 @@ public class Server {
     hostRedirects.append((host: host, sllFiles: sllFiles))
   }
   
-  public func addEndpoint(method: Method, url: String, handler: @escaping (Request, Response) -> Void) {
+  public func addEndpoint(method: Method, url: String, handler: @escaping (Request, ResponseBuilder) -> Void) {
     endpoints.append((method: method,
                       url: url,
                       handler: handler))
@@ -139,7 +139,7 @@ public class Server {
                              responseStatus: responseStatus))
   }
   
-  func getHandlerFor(method: Method, url: String) -> ((Request, Response) -> Void)? {
+  func getHandlerFor(method: Method, url: String) -> ((Request, ResponseBuilder) -> Void)? {
     for handler in endpoints {
       if handler.method == .any || handler.method == method {
         if let end = handler.url.firstIndex(of: "*") {
@@ -154,7 +154,7 @@ public class Server {
     return nil
   }
   
-  func staticFileHandler(request: Request, response: Response) {
+  func staticFileHandler(request: Request, responseBuilder: ResponseBuilder) {
     var url: String = staticDocumentRoot + request.url
     
     if let file = try? Data(contentsOf: URL(fileURLWithPath: url)) {
@@ -164,60 +164,54 @@ public class Server {
         let fileNameSplits = fileName.split(separator: ".")
         if let potentialFileExtension = fileNameSplits.last { fileExtension = String(potentialFileExtension) }
       }
-      response.body = file
-      response.contentType = .from(fileExtension: fileExtension)
+      responseBuilder.body = file
+      responseBuilder.contentType = .from(fileExtension: fileExtension)
     } else {
       guard url.last == "/" else {
         url += "/"
-        response.location = "http\(usingTLS ? "s" : "")://" + host + request.url + "/"
-        response.status = .movedPermanently
-        response.complete()
+        responseBuilder.location = "http\(usingTLS ? "s" : "")://" + host + request.url + "/"
+        responseBuilder.status = .movedPermanently
+        responseBuilder.complete()
         return
       }
       url += "index.html"
       if let file = try? Data(contentsOf: URL(fileURLWithPath: url)) {
-        response.body = file
-        response.contentType = .html
+        responseBuilder.body = file
+        responseBuilder.contentType = .html
       } else {
-        response.status = .notFound
-        response.bodyString = notFoundPage
-        response.contentType = .html
+        responseBuilder.status = .notFound
+        responseBuilder.bodyString = notFoundPage
+        responseBuilder.contentType = .html
       }
     }
     
-    response.lastModifiedDate = (try? FileManager.default.attributesOfItem(atPath: url))?[FileAttributeKey.modificationDate] as? Date
-    
-    response.complete()
+    responseBuilder.lastModifiedDate = (try? FileManager.default.attributesOfItem(atPath: url))?[FileAttributeKey.modificationDate] as? Date
+    responseBuilder.complete()
   }
   
   func handleConnection(socket: ClientSocket) {
     if let socket = socket as? ClientSSLSocket { socket.initSSLConnection(sslContext: sslContext) }
     guard accessControl.shouldAllowAccessTo(ipAddress: socket.ipAddress) else { return }
     while let request = socket.acceptRequest() {
-      let response = Response(clientSocket: socket)
+      let responseBuilder = ResponseBuilder(clientSocket: socket)
       for accessControlRule in urlAccessControl where
         request.url.starts(with: accessControlRule.url) &&
         !accessControlRule.accessControl.shouldAllowAccessTo(ipAddress: socket.ipAddress) {
-          response.status = accessControlRule.responseStatus
+          responseBuilder.status = accessControlRule.responseStatus
           continue
       }
-      guard case .ok = response.status else {
-        response.complete()
+      guard case .ok = responseBuilder.status else {
+        responseBuilder.complete()
         continue
       }
       
       if request.method == .head {
-        response.omitBody = true
+        responseBuilder.omitBody = true
         request.method = .get
       }
       
-      if let handler = getHandlerFor(method: request.method,
-                                     url: request.url) {
-        handler(request, response)
-      } else {
-        staticFileHandler(request: request,
-                            response: response)
-      }
+      if let handler = getHandlerFor(method: request.method, url: request.url) { handler(request, responseBuilder) }
+      else { staticFileHandler(request: request, responseBuilder: responseBuilder) }
     }
   }
   
