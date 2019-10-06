@@ -33,7 +33,7 @@ class Router {
     }
       
     routingTable["\(host):\(port)"] = server
-    if server.connectionHandling == .acceptAll && routingTable[":\(port)"] == nil { routingTable[":\(port)"] = server }
+    if server.ignoreRequestHostChecking && routingTable[":\(port)"] == nil { routingTable[":\(port)"] = server }
     signal(SIGPIPE, SIG_IGN)
   }
 

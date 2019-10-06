@@ -7,7 +7,7 @@ class Socket {
   let socketFileDescriptor: Int32
   
   init(socketFD: Int32) {
-    socketFileDescriptor = socketFD;
+    socketFileDescriptor = socketFD
   }
   
   deinit {

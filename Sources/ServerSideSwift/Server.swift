@@ -32,11 +32,6 @@ public class Server {
     
   static let supportedHTTPVersions: [String] = ["http/1.1"]
   
-  public enum ConnectionHandling {
-    case acceptAll
-    case acceptMatchingHost
-  }
-  
   public enum AccessControl {
     case acceptAll(blacklist: [String])
     case blockAll(whitelist: [String])
@@ -52,7 +47,6 @@ public class Server {
   private func hostRedirectServer(from host: String, withSSL sllFiles: (certificateFile: String, privateKeyFile: String)?) -> Server {
     let redirectServer = Server(host: host)
     redirectServer.shouldProvideStaticFiles = false
-    redirectServer.connectionHandling = connectionHandling
     redirectServer.addEndpoint(method: .any, url: "*", handler: {request, response in
       response.status = .movedPermanently
       response.location = "http\(sllFiles != nil ? "s" : "")://" + self.host + request.url
@@ -68,7 +62,6 @@ public class Server {
   private func httpToHttpsRedirectServer() -> Server {
     let redirectServer = Server(host: host)
     redirectServer.shouldProvideStaticFiles = false
-    redirectServer.connectionHandling = connectionHandling
     redirectServer.addEndpoint(method: .any, url: "*", handler: {request, response in
       response.status = .movedPermanently
       response.location = "https://" + self.host + request.url
@@ -78,25 +71,26 @@ public class Server {
     return redirectServer
   }
 
-  public var serverName: String = ""
-  public var httpPort: UInt16 = 80
   public var httpsPort: UInt16 = 443
   public var httpPortDebug: UInt16 = 8018
-  public var staticDocumentRoot: String {
-    get { return documentRoot }
-    set { documentRoot = /*CommandLine.arguments[0] +*/ newValue }
-  }
+  public var staticDocumentRoot: String = /*CommandLine.arguments[0] +*/ "./static"
   public var accessControl: AccessControl = .acceptAll(blacklist: [])
-  public var pageAccessControl: [(url: String, accessControl: AccessControl, responseStatus: ResponseStatus)] = []
-  public var connectionHandling: ConnectionHandling = .acceptMatchingHost
-  public var shouldRedirectHttpToHttps: Bool = false
   public var shouldProvideStaticFiles: Bool = true
+  #if DEBUG
+  public var httpPort: UInt16 { get { return httpPortDebug } set {} }
+  public var shouldRedirectHttpToHttps: Bool { get { return true } set {} }
+  public var ignoreRequestHostChecking: Bool { get { return true } set {} }
+  #else
+  public var httpPort: UInt16 = 80
+  public var ignoreRequestHostChecking: Bool = false
+  public var shouldRedirectHttpToHttps: Bool = false
+  #endif
   
   private var host: String
   private var usingTLS = false
-  private var documentRoot: String = /*CommandLine.arguments[0] +*/ "./static"
   private var endpoints = [(method: Method, url: String, handler: (request: Request, response: Response) -> Void)]()
   private var hostRedirects = [(host: String, sllFiles: (certificateFile: String, privateKeyFile: String)?)]()
+  private var urlAccessControl: [(url: String, accessControl: AccessControl, responseStatus: ResponseStatus)] = []
   
   private var sslContext: UnsafeMutablePointer<SSL_CTX>!
   
@@ -136,10 +130,10 @@ public class Server {
                       handler: handler))
   }
   
-  public func addPageSpecificAccessControl(subDirectory: String, accessControl: AccessControl, responseStatus: ResponseStatus) {
-    pageAccessControl.append((url: subDirectory,
-                              accessControl: accessControl,
-                              responseStatus: responseStatus))
+  public func addUrlSpecificAccessControl(subDirectory: String, accessControl: AccessControl, responseStatus: ResponseStatus) {
+    urlAccessControl.append((url: subDirectory,
+                             accessControl: accessControl,
+                             responseStatus: responseStatus))
   }
   
   func getHandlerFor(method: Method, url: String) -> ((Request, Response) -> Void)? {
@@ -198,7 +192,7 @@ public class Server {
     guard accessControl.shouldAllowAccessTo(ipAddress: socket.ipAddress) else { return }
     while let request = socket.acceptRequest() {
       let response = Response(clientSocket: socket)
-      for accessControlRule in pageAccessControl where
+      for accessControlRule in urlAccessControl where
         request.url.starts(with: accessControlRule.url) &&
         !accessControlRule.accessControl.shouldAllowAccessTo(ipAddress: socket.ipAddress) {
           response.status = accessControlRule.responseStatus
@@ -227,7 +221,6 @@ public class Server {
   public func start() {
     #if DEBUG
     let httpPort = httpPortDebug
-    connectionHandling = .acceptAll
     #else
     let httpPort = self.httpPort
     if usingTLS && shouldRedirectHttpToHttps {
