@@ -33,7 +33,7 @@ public struct Response: CustomStringConvertible {
     return string + .lineBreak
   }
   
-  var responseData: Data {
+  var data: Data {
     var data = Data(headerString.utf8)
     if let body = body { data += body }
     return data
@@ -41,7 +41,7 @@ public struct Response: CustomStringConvertible {
   
   public var description: String {
     var string = headerString
-    if let bodyString = bodyAsString { string += bodyString }
+    if let bodyString = bodyAsString { string += bodyString + .lineBreak }
     return string
   }
 }

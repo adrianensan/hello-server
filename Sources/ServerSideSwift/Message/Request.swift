@@ -10,13 +10,24 @@ public struct Request: CustomStringConvertible {
   
   public var bodyAsString: String? { if let body = body { return String(data: body, encoding: .utf8) } else { return nil } }
   
-  public var description: String {
+  private var headerString: String {
     return
-      """
-      \(method) \(url)
-      Host: \(host ?? "Not Set")
-       
-      \(bodyAsString ?? "")
-      """
+    """
+    \(method) \(url)
+    Host: \(host ?? "Not Set")
+    
+    """
+  }
+  
+  public var description: String {
+    var string = headerString
+    if let bodyString = bodyAsString { string += bodyString + .lineBreak }
+    return string
+  }
+  
+  var data: Data {
+    var data = Data(headerString.utf8)
+    if let body = body { data += body }
+    return data
   }
 }

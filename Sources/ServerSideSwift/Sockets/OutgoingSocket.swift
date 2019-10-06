@@ -1,7 +1,7 @@
 import Foundation
 import CoreFoundation
 
-class OutgoingSocket: Socket {
+public class OutgoingSocket: Socket {
   
   #if os(Linux)
   static let socketStremType = Int32(SOCK_STREAM.rawValue)
@@ -17,15 +17,29 @@ class OutgoingSocket: Socket {
   }
   #endif
   
-  init?(to host: String, port: UInt16) {
-    let socketFD = socket(AF_INET, ServerSocket.socketStremType, 0)
+  public init?(to host: String, port: UInt16 = Socket.defaultHTTPPort) {
+    
+    var result: UnsafeMutablePointer<addrinfo>?
+    getaddrinfo(host, "\(port)", nil, &result)
+    
+    guard let addr = result?.pointee else {
+      print("\nFailed to create\n")
+      return nil
+    }
+    
+    let socketFD = socket(addr.ai_family, addr.ai_socktype, addr.ai_protocol)
     super.init(socketFD: socketFD)
     
     guard socketFileDescriptor >= 0 else { return nil }
     
-    var result: UnsafeMutablePointer<addrinfo>?
-    getaddrinfo(host, nil, nil, &result)
+    //let size = socklen_t(addr?.ai_family == AF_INET ? MemoryLayout<sockaddr_in>.size : MemoryLayout<sockaddr_in6>.size)
+    if connect(socketFileDescriptor, addr.ai_addr, addr.ai_addrlen) < 0 {
+      print("\nConnection Failed \n")
+      return nil
+    }
+    print("\nConnected!\n")
     
+    /*
     var value = 1
     guard setsockopt(socketFileDescriptor,
                      SOL_SOCKET,
@@ -56,10 +70,33 @@ class OutgoingSocket: Socket {
     guard listen(socketFileDescriptor, ServerSocket.acceptBacklog) != -1 else {
       fatalError("Failed to listen on port \(port).")
     }
+ */
   }
   
   deinit {
     close(socketFileDescriptor)
   }
   
+  func getResponse() -> Response? {
+    var responseBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
+    var responseLength: Int = 0
+    let bytesRead = recv(socketFileDescriptor, &responseBuffer[responseLength], Socket.bufferSize - responseLength, 0)
+    guard bytesRead > 0 else { return nil }
+    responseLength += bytesRead
+    return Response.parse(data: responseBuffer[..<responseLength].filter{$0 != 13})
+  }
+  
+  func sendRequest(_ request: Request) {
+    let requestBytes: [UInt8] = [UInt8](request.data)
+    sendData(data: requestBytes)
+  }
+  
+  func sendData(data: [UInt8]) {
+    var bytesToSend = data.count
+    repeat {
+      let bytesSent = send(socketFileDescriptor, data, bytesToSend, ClientSocket.socketSendFlags)
+      if bytesSent <= 0 { return }
+      bytesToSend -= bytesSent
+    } while bytesToSend > 0
+  }
 }

@@ -79,7 +79,7 @@ public class Server {
     return redirectServer
   }
 
-  public var httpsPort: UInt16 = 443
+  public var httpsPort: UInt16 = Socket.defaultHTTPSPort
   public var httpPortDebug: UInt16 = 8018
   public var staticDocumentRoot: String = /*CommandLine.arguments[0] +*/ "./static"
   public var accessControl: AccessControl = .acceptAll(blacklist: [])
@@ -90,7 +90,7 @@ public class Server {
   public var ignoreRequestHostChecking: Bool { get { return true } set {} }
   private var hostRedirects: [(host: String, sllFiles: SSLFiles?)] { get { return [] } set {} }
   #else
-  public var httpPort: UInt16 = 80
+  public var httpPort: UInt16 = Socket.defaultHTTPPort
   public var ignoreRequestHostChecking: Bool = false
   public var shouldRedirectHttpToHttps: Bool = false
   private var hostRedirects: [(host: String, sllFiles: SSLFiles?)] = []

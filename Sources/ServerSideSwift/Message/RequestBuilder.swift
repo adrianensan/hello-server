@@ -14,4 +14,8 @@ public class RequestBuilder: Message, CustomStringConvertible {
                                                         body: body)}
   
   public var description: String { return finalizedRequest.description }
+  
+  public override init() {
+    super.init()
+  }
 }
