@@ -88,15 +88,16 @@ public class Server {
   public var httpPort: UInt16 { get { return httpPortDebug } set {} }
   public var shouldRedirectHttpToHttps: Bool { get { return true } set {} }
   public var ignoreRequestHostChecking: Bool { get { return true } set {} }
+  private var host: String { get { return "localhost:\(httpPortDebug)" } set {} }
   private var hostRedirects: [(host: String, sllFiles: SSLFiles?)] { get { return [] } set {} }
   #else
   public var httpPort: UInt16 = Socket.defaultHTTPPort
   public var ignoreRequestHostChecking: Bool = false
   public var shouldRedirectHttpToHttps: Bool = false
+  private var host: String
   private var hostRedirects: [(host: String, sllFiles: SSLFiles?)] = []
   #endif
   
-  private var host: String
   private var usingTLS: Bool = false
   private var endpoints: [(method: Method, url: String, handler: (_ request: Request, _ response: ResponseBuilder) -> Void)] = []
   private var urlAccessControl: [(url: String, accessControl: AccessControl, responseStatus: ResponseStatus)] = []
