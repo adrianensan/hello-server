@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Response: CustomStringConvertible {
+public struct Response {
   
   public let httpVersion: HTTPVersion = .http1_1
   public let status: ResponseStatus
@@ -25,12 +25,6 @@ public struct Response: CustomStringConvertible {
     location = responseBuilder.location
     lastModifiedDate = responseBuilder.lastModifiedDate
     body = !responseBuilder.omitBody ? responseBuilder.body : nil
-  }
-  
-  public static func new(closure: (ResponseBuilder) -> ()) -> Response {
-    let responseBuilder = ResponseBuilder()
-    closure(responseBuilder)
-    return responseBuilder.response
   }
   
   public var bodyAsString: String? { if let body = body { return String(data: body, encoding: .utf8) } else { return nil } }
@@ -59,7 +53,9 @@ public struct Response: CustomStringConvertible {
     if let body = body { data += body + Data((.lineBreak + .lineBreak).utf8) }
     return data
   }
-  
+}
+
+extension Response: CustomStringConvertible {
   public var description: String {
     var string = headerString
     if let bodyString = bodyAsString { string += bodyString + .lineBreak }

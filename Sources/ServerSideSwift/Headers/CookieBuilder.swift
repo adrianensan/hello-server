@@ -1,6 +1,6 @@
 import Foundation
 
-public class CookieBuilder: CustomStringConvertible {
+public class CookieBuilder {
   
   public var name: String
   public var value: String
@@ -31,6 +31,6 @@ public class CookieBuilder: CustomStringConvertible {
   }
   
   public func addCustom(_ value: String) { customValues.append(value) }
-  
-  public var description: String { cookie.description }
 }
+
+extension CookieBuilder: CustomStringConvertible { public var description: String { cookie.description } }

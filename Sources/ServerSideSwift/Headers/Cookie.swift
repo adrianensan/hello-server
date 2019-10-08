@@ -1,14 +1,6 @@
 import Foundation
 
-public struct Cookie: CustomStringConvertible {
-  
-  public static func new(name: String,
-                         value: String,
-                         closure: ((CookieBuilder) -> ())? = nil) -> Cookie {
-    let cookieBuilder = CookieBuilder(name: name, value: value)
-    closure?(cookieBuilder)
-    return cookieBuilder.cookie
-  }
+public struct Cookie {
     
   public enum SameSiteType {
     case strict
@@ -54,7 +46,9 @@ public struct Cookie: CustomStringConvertible {
     if let expiry = expiry { return expiry - Date().timeIntervalSince1970 }
     return nil
   }
-  
+}
+
+extension Cookie: CustomStringConvertible {
   public var description: String {
     var string: String = Header.setCookiePrefix
     string += "\(name)=\(value)"

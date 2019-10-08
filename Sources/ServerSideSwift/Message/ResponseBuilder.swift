@@ -1,6 +1,6 @@
 import Foundation
 
-public class ResponseBuilder: Message, CustomStringConvertible {
+public class ResponseBuilder: Message {
     
   public var status: ResponseStatus = .ok
   public var contentType: ContentType = .none
@@ -43,6 +43,6 @@ public class ResponseBuilder: Message, CustomStringConvertible {
     socket.sendResponse(response)
     self.socket = nil
   }
-  
-  public var description: String { response.description }
 }
+
+extension ResponseBuilder: CustomStringConvertible { public var description: String { response.description } }

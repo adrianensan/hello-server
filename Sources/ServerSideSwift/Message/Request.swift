@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Request: CustomStringConvertible {
+public struct Request {
     
   public let httpVersion: HTTPVersion = .http1_1
   public let method: Method
@@ -34,15 +34,17 @@ public struct Request: CustomStringConvertible {
     return string + .lineBreak
   }
   
-  public var description: String {
-    var string = headerString
-    if let bodyString = bodyAsString { string += bodyString + .lineBreak }
-    return string
-  }
-  
   var data: Data {
     var data = Data(headerString.utf8)
     if let body = body { data += body + Data((.lineBreak + .lineBreak).utf8) }
     return data
+  }
+}
+
+extension Request: CustomStringConvertible {
+  public var description: String {
+    var string = headerString
+    if let bodyString = bodyAsString { string += bodyString + .lineBreak }
+    return string
   }
 }

@@ -1,6 +1,6 @@
 import Foundation
 
-public class RequestBuilder: Message, CustomStringConvertible {
+public class RequestBuilder: Message {
   
   public var method: Method = .get
   public var url: String = "/"
@@ -10,8 +10,6 @@ public class RequestBuilder: Message, CustomStringConvertible {
   weak private var socket: OutgoingSocket?
   
   public var request: Request { Request(requestBuilder: self) }
-  
-  public var description: String { request.description }
   
   override init() { super.init() }
   
@@ -32,3 +30,5 @@ public class RequestBuilder: Message, CustomStringConvertible {
     self.socket = nil
   }
 }
+
+extension RequestBuilder: CustomStringConvertible { public var description: String { request.description } }
