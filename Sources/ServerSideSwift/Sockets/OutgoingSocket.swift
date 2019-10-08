@@ -5,20 +5,6 @@ public class OutgoingSocket: Socket {
   
   let host: String
   
-  #if os(Linux)
-  static let socketStremType = Int32(SOCK_STREAM.rawValue)
-  
-  static func hostToNetworkByteOrder(_ port: UInt16) -> UInt16 {
-    return CFSwapInt16(port)
-  }
-  #else
-  static let socketStremType = SOCK_STREAM
-  
-  static func hostToNetworkByteOrder(_ port: UInt16) -> UInt16 {
-    return Int(OSHostByteOrder()) == OSLittleEndian ? CFSwapInt16(port) : port
-  }
-  #endif
-  
   public init?(to host: String, port: UInt16 = Socket.defaultHTTPPort) {
     self.host = host
     var result: UnsafeMutablePointer<addrinfo>?
@@ -83,6 +69,13 @@ public class OutgoingSocket: Socket {
     //close(socketFileDescriptor)
   }
   
+  public func sendAndWait(_ request: Request) -> Response? {
+    //if request.host == nil { request.host = host }
+    let requestBytes: [UInt8] = [UInt8](request.data)
+    sendData(data: requestBytes)
+    return getResponse()
+  }
+  
   func getResponse() -> Response? {
     var responseBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
     var responseLength: Int = 0
@@ -94,11 +87,6 @@ public class OutgoingSocket: Socket {
         return response
       }
     }
-  }
-  
-  public func sendRequest(_ request: Request) {
-    let requestBytes: [UInt8] = [UInt8](request.data)
-    sendData(data: requestBytes)
   }
   
   func sendData(data: [UInt8]) {

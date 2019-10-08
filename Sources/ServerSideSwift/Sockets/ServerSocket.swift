@@ -5,20 +5,6 @@ class ServerSocket: Socket {
     
   static let acceptBacklog: Int32 = 20
   
-  #if os(Linux)
-  static let socketStremType = Int32(SOCK_STREAM.rawValue)
-  
-  static func hostToNetworkByteOrder(_ port: UInt16) -> UInt16 {
-    CFSwapInt16(port)
-  }
-  #else
-  static let socketStremType = SOCK_STREAM
-  
-  static func hostToNetworkByteOrder(_ port: UInt16) -> UInt16 {
-    Int(OSHostByteOrder()) == OSLittleEndian ? CFSwapInt16(port) : port
-  }
-  #endif
-  
   let usingTLS: Bool
   
   init(port: UInt16, usingTLS: Bool) {
