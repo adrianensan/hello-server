@@ -9,24 +9,22 @@ public class RequestBuilder: Message, CustomStringConvertible {
   
   weak private var socket: OutgoingSocket?
   
-  public var finalizedRequest: Request { return Request(method: method,
-                                                        url: url,
-                                                        host: host,
-                                                        cookies: cookies,
-                                                        body: body)}
+  public var finalizedRequest: Request { Request(method: method,
+                                                 url: url,
+                                                 host: host,
+                                                 cookies: cookies,
+                                                 body: body)}
   
-  public var description: String { return finalizedRequest.description }
+  public var description: String { finalizedRequest.description }
   
-  override init() {
-    super.init()
-  }
+  override init() { super.init() }
   
   public init(to socket: OutgoingSocket) {
     self.socket = socket
     super.init()
   }
   
-  public func send(responseHandler: @escaping (Response) -> Void) {
+  public func send(responseHandler: (Response) -> Void) {
     guard let socket = socket else {
       print("Attempted to complete a request after it was already sent, don't do this, nothing happens")
       return

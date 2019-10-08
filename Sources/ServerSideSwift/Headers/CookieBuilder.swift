@@ -13,15 +13,15 @@ public class CookieBuilder: CustomStringConvertible {
   private var maxAge: Double?
   private var customValues: [String] = []
   
-  public var finalizedCookie: Cookie { return Cookie(name: name,
-                                                     value: value,
-                                                     domain: domain,
-                                                     path: path,
-                                                     secure: secure,
-                                                     httpOnly: httpOnly,
-                                                     sameSite: sameSite,
-                                                     expiry: expiry,
-                                                     customValues: customValues)}
+  public var finalizedCookie: Cookie { Cookie(name: name,
+                                              value: value,
+                                              domain: domain,
+                                              path: path,
+                                              secure: secure,
+                                              httpOnly: httpOnly,
+                                              sameSite: sameSite,
+                                              expiry: expiry,
+                                              customValues: customValues)}
   
   public init(name: String, value: String) {
     self.name = name
@@ -40,5 +40,5 @@ public class CookieBuilder: CustomStringConvertible {
   
   public func addCustom(_ value: String) { customValues.append(value) }
   
-  public var description: String { return finalizedCookie.description }
+  public var description: String { finalizedCookie.description }
 }

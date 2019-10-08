@@ -1,6 +1,12 @@
 import Foundation
 
 public struct Request: CustomStringConvertible {
+  
+  public static func new(closure: (RequestBuilder) -> ()) -> Request {
+    let requestBuilder = RequestBuilder()
+    closure(requestBuilder)
+    return requestBuilder.finalizedRequest
+  }
     
   public let httpVersion: HTTPVersion = .http1_1
   public let method: Method

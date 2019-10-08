@@ -24,6 +24,6 @@ public class Message {
   public var body: Data = Data()
   public var bodyString: String {
     set { body = Data(newValue.utf8) }
-    get { return String(data: body, encoding: .utf8) ?? "" }
+    get { String(data: body, encoding: .utf8) ?? "" }
   }
 }

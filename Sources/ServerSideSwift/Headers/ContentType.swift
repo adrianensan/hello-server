@@ -1,11 +1,11 @@
 public enum ContentType: CustomStringConvertible {
   
   static var allCases: [ContentType] {
-    return [.plain, .html, .css, .csv, .javascript, .ics, .otf, .ttf, .woff, .woff2, .png, .jpeg, .tiff,
-            .gif, .webpImage, .svg, .icon, .aac, .oggAudio, .webmAudio, .wav, .midi, .x3GPP, .x3GPP2,
-            .avi, .mpeg, .oggVideo, .webmVideo, .json, .xhtml, .xml, .xul, .pdf, .rtf, .oldWord,
-            .oldPowerpoint, .oldExcel, .word, .powerpoint, .excel, .epub, .sh, .typescript, .es,
-            .eot, .zip, .tar, .rar, .bz, .bz2, .x7zip, .jar, .ogg, .bin, .other]
+    [.plain, .html, .css, .csv, .javascript, .ics, .otf, .ttf, .woff, .woff2, .png, .jpeg, .tiff,
+     .gif, .webpImage, .svg, .icon, .aac, .oggAudio, .webmAudio, .wav, .midi, .x3GPP, .x3GPP2,
+     .avi, .mpeg, .oggVideo, .webmVideo, .json, .xhtml, .xml, .xul, .pdf, .rtf, .oldWord,
+     .oldPowerpoint, .oldExcel, .word, .powerpoint, .excel, .epub, .sh, .typescript, .es,
+     .eot, .zip, .tar, .rar, .bz, .bz2, .x7zip, .jar, .ogg, .bin, .other]
   }
   
   case none
@@ -195,7 +195,5 @@ public enum ContentType: CustomStringConvertible {
     }
   }
   
-  public var description: String {
-    return Header.contentTypePrefix + typeString
-  }
+  public var description: String { Header.contentTypePrefix + typeString }
 }

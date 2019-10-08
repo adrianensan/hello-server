@@ -9,13 +9,13 @@ class ServerSocket: Socket {
   static let socketStremType = Int32(SOCK_STREAM.rawValue)
   
   static func hostToNetworkByteOrder(_ port: UInt16) -> UInt16 {
-    return CFSwapInt16(port)
+    CFSwapInt16(port)
   }
   #else
   static let socketStremType = SOCK_STREAM
   
   static func hostToNetworkByteOrder(_ port: UInt16) -> UInt16 {
-    return Int(OSHostByteOrder()) == OSLittleEndian ? CFSwapInt16(port) : port
+    Int(OSHostByteOrder()) == OSLittleEndian ? CFSwapInt16(port) : port
   }
   #endif
   

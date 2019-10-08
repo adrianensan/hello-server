@@ -1,6 +1,14 @@
 import Foundation
 
 public struct Cookie: CustomStringConvertible {
+  
+  public static func new(name: String,
+                         value: String,
+                         closure: ((CookieBuilder) -> ())? = nil) -> Cookie {
+    let cookieBuilder = CookieBuilder(name: name, value: value)
+    closure?(cookieBuilder)
+    return cookieBuilder.finalizedCookie
+  }
     
   public enum SameSiteType {
     case strict

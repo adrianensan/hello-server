@@ -1,6 +1,12 @@
 import Foundation
 
 public struct Response: CustomStringConvertible {
+  
+  public static func new(closure: (ResponseBuilder) -> ()) -> Response {
+    let responseBuilder = ResponseBuilder()
+    closure(responseBuilder)
+    return responseBuilder.finalizedResponse
+  }
 
   public let httpVersion: HTTPVersion = .http1_1
   public let status: ResponseStatus

@@ -12,13 +12,13 @@ public class ResponseBuilder: Message, CustomStringConvertible {
 
   weak private var socket: ClientSocket?
   
-  public var finalizedResponse: Response { return Response(status: status,
-                                                 cookies: cookies,
-                                                 customeHeaders: customeHeaders,
-                                                 contentType: contentType,
-                                                 location: location,
-                                                 lastModifiedDate: lastModifiedDate,
-                                                 body: !omitBody ? body : nil)}
+  public var finalizedResponse: Response { Response(status: status,
+                                                    cookies: cookies,
+                                                    customeHeaders: customeHeaders,
+                                                    contentType: contentType,
+                                                    location: location,
+                                                    lastModifiedDate: lastModifiedDate,
+                                                    body: !omitBody ? body : nil)}
   
   init(clientSocket: ClientSocket? = nil) {
     socket = clientSocket
@@ -50,5 +50,5 @@ public class ResponseBuilder: Message, CustomStringConvertible {
     self.socket = nil
   }
   
-  public var description: String { return finalizedResponse.description }
+  public var description: String { finalizedResponse.description }
 }

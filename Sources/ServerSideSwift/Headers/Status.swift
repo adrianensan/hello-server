@@ -191,7 +191,5 @@ public enum ResponseStatus {
     }
   }
   
-  public var description: String {
-    return "\(statusCode) \(statusDescription)"
-  }
+  public var description: String { "\(statusCode) \(statusDescription)" }
 }

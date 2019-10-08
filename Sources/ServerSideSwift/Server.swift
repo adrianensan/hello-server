@@ -85,11 +85,11 @@ public class Server {
   public var accessControl: AccessControl = .acceptAll(blacklist: [])
   public var shouldProvideStaticFiles: Bool = true
   #if DEBUG
-  public var httpPort: UInt16 { get { return httpPortDebug } set {} }
-  public var shouldRedirectHttpToHttps: Bool { get { return true } set {} }
-  public var ignoreRequestHostChecking: Bool { get { return true } set {} }
-  private var host: String { get { return "localhost:\(httpPortDebug)" } set {} }
-  private var hostRedirects: [(host: String, sllFiles: SSLFiles?)] { get { return [] } set {} }
+  public var httpPort: UInt16 { get { httpPortDebug } set {} }
+  public var shouldRedirectHttpToHttps: Bool { get { true } set {} }
+  public var ignoreRequestHostChecking: Bool { get { true } set {} }
+  private var host: String { get { "localhost:\(httpPortDebug)" } set {} }
+  private var hostRedirects: [(host: String, sllFiles: SSLFiles?)] { get { [] } set {} }
   #else
   public var httpPort: UInt16 = Socket.defaultHTTPPort
   public var ignoreRequestHostChecking: Bool = false
