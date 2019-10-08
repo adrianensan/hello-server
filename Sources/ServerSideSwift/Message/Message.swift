@@ -23,7 +23,7 @@ public class Message {
   
   public var body: Data = Data()
   public var bodyString: String {
-    set { body = Data(newValue.utf8) }
+    set { body = newValue.data }
     get { String(data: body, encoding: .utf8) ?? "" }
   }
 }

@@ -11,7 +11,7 @@ public struct Response {
   public let lastModifiedDate: Date?
   public let body: Data?
   
-  init(closure: (ResponseBuilder) -> ()) {
+  public init(closure: (ResponseBuilder) -> ()) {
     let responseBuilder = ResponseBuilder()
     closure(responseBuilder)
     self.init(responseBuilder: responseBuilder)
@@ -49,8 +49,8 @@ public struct Response {
   }
   
   var data: Data {
-    var data = Data(headerString.utf8)
-    if let body = body { data += body + Data((.lineBreak + .lineBreak).utf8) }
+    var data = headerString.data
+    if let body = body { data += body + (.lineBreak + .lineBreak).data }
     return data
   }
 }

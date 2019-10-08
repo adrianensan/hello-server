@@ -9,7 +9,7 @@ public struct Request {
   public let cookies: [String: String]
   public let body: Data?
   
-  init(_ builder: (RequestBuilder) -> Void) {
+  public init(_ builder: (RequestBuilder) -> Void) {
     let requestBuilder = RequestBuilder()
     builder(requestBuilder)
     self.init(requestBuilder: requestBuilder)
@@ -35,8 +35,8 @@ public struct Request {
   }
   
   var data: Data {
-    var data = Data(headerString.utf8)
-    if let body = body { data += body + Data((.lineBreak + .lineBreak).utf8) }
+    var data = headerString.data
+    if let body = body { data += body + (.lineBreak + .lineBreak).data }
     return data
   }
 }

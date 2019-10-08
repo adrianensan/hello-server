@@ -4,12 +4,12 @@ extension String {
     
   static let lineBreak: String = "\r\n"
   
-  var data: Data { return data(using: .utf8) ?? Data() }
+  var data: Data { data(using: .utf8) ?? Data() }
   
-  var filterNewlines: String { return filter{ !String.lineBreak.contains($0) } }
+  var filterNewlines: String { filter{ !String.lineBreak.contains($0) } }
   
-  var trimWhitespace: String { return trimmingCharacters(in: .whitespaces) }
-  var trimNewlines: String { return trimmingCharacters(in: .newlines) }
+  var trimWhitespace: String { trimmingCharacters(in: .whitespaces) }
+  var trimNewlines: String { trimmingCharacters(in: .newlines) }
 }
 
 extension Array where Element == UInt8 {

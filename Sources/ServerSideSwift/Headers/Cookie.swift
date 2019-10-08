@@ -24,7 +24,7 @@ public struct Cookie {
   public let expiry: TimeInterval?
   public let customValues: [String]
   
-  init(name: String, value: String, _ builder: ((CookieBuilder) -> Void)? = nil) {
+  public init(name: String, value: String, _ builder: ((CookieBuilder) -> Void)? = nil) {
     let cookieBuilder = CookieBuilder(name: name, value: value)
     builder?(cookieBuilder)
     self.init(cookieBuilder: cookieBuilder)
