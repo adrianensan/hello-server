@@ -74,15 +74,22 @@ public class OutgoingSSLSocket: Socket {
   
   public func initSSLConnection(sslContext: UnsafeMutablePointer<SSL_CTX>) {
     sslSocket = SSL_new(sslContext);
-    SSL_set_fd(sslSocket, socketFileDescriptor);
+    SSL_set_fd(sslSocket, socketFileDescriptor)
     //SSL_CTX_set_info_callback(sslContext, infoCallback)
-    let ssl_err = SSL_connect(sslSocket);
-    if ssl_err <= 0 { close(socketFileDescriptor) }
+    let ssl_err = SSL_connect(sslSocket)
+    if ssl_err <= 0 {
+      
+      print("damn failed\(SSL_get_error(sslSocket, 0))")
+      close(socketFileDescriptor)
+      
+    }
   }
   
   public func sendAndWait(_ request: Request) -> Response? {
     let requestBytes: [UInt8] = [UInt8](request.data)
+    print(request)
     sendData(data: requestBytes)
+    print("Now waiting")
     return getResponse()
   }
   

@@ -107,8 +107,8 @@ public class Server {
   private func initSSLContext(sslFiles: SSLFiles) {
     SSL_load_error_strings();
     SSL_library_init();
-    OpenSSL_add_all_digests();
-    sslContext = SSL_CTX_new(TLSv1_2_server_method())
+    OpenSSL_add_all_digests()
+    sslContext = SSL_CTX_new(SSLv23_method())
     SSL_CTX_set_alpn_select_cb(sslContext, alpn_select_callback, nil)
     if SSL_CTX_use_certificate_file(sslContext, sslFiles.certificate , SSL_FILETYPE_PEM) != 1 {
       fatalError("Failed to use provided certificate file")
