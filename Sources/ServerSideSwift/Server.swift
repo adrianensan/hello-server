@@ -102,7 +102,7 @@ public class Server {
   private var endpoints: [(method: Method, url: String, handler: (_ request: Request, _ response: ResponseBuilder) -> Void)] = []
   private var urlAccessControl: [(url: String, accessControl: AccessControl, responseStatus: ResponseStatus)] = []
   
-  private var sslContext: UnsafeMutablePointer<SSL_CTX>!
+  public var sslContext: UnsafeMutablePointer<SSL_CTX>!
   
   private func initSSLContext(sslFiles: SSLFiles) {
     SSL_load_error_strings();

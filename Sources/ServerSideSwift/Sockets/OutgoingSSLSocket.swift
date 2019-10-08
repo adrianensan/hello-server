@@ -72,7 +72,7 @@ public class OutgoingSSLSocket: Socket {
     //close(socketFileDescriptor)
   }
   
-  func initSSLConnection(sslContext: UnsafeMutablePointer<SSL_CTX>) {
+  public func initSSLConnection(sslContext: UnsafeMutablePointer<SSL_CTX>) {
     sslSocket = SSL_new(sslContext);
     SSL_set_fd(sslSocket, socketFileDescriptor);
     //SSL_CTX_set_info_callback(sslContext, infoCallback)
