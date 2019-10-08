@@ -124,7 +124,7 @@ public class Server {
   
   public func useTLS(sslFiles: SSLFiles) {
     #if !(DEBUG)
-    initSSLContext(sslFiles)
+    initSSLContext(sslFiles: sslFiles)
     usingTLS = true
     #endif
   }
