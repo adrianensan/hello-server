@@ -4,4 +4,4 @@
 /*.xcodeproj
 /static
 Package.resolved
-
+*.xcuserstate
