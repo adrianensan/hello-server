@@ -7,18 +7,12 @@ public class ResponseBuilder: Message, CustomStringConvertible {
   public var location: String?
   public var lastModifiedDate: Date?
   public var omitBody: Bool = false
-  private var cookies: [Cookie] = []
-  private var customeHeaders: [String] = []
+  var cookies: [Cookie] = []
+  var customeHeaders: [String] = []
 
   weak private var socket: ClientSocket?
   
-  public var finalizedResponse: Response { Response(status: status,
-                                                    cookies: cookies,
-                                                    customeHeaders: customeHeaders,
-                                                    contentType: contentType,
-                                                    location: location,
-                                                    lastModifiedDate: lastModifiedDate,
-                                                    body: !omitBody ? body : nil)}
+  public var response: Response { Response(responseBuilder: self) }
   
   init(clientSocket: ClientSocket? = nil) {
     socket = clientSocket
@@ -46,9 +40,9 @@ public class ResponseBuilder: Message, CustomStringConvertible {
       print("Attempted to complete a response after it was already sent, don't do this, nothing happens")
       return
     }
-    socket.sendResponse(finalizedResponse)
+    socket.sendResponse(response)
     self.socket = nil
   }
   
-  public var description: String { finalizedResponse.description }
+  public var description: String { response.description }
 }

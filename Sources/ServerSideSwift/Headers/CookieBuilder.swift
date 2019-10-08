@@ -9,19 +9,11 @@ public class CookieBuilder: CustomStringConvertible {
   public var secure: Bool = false
   public var httpOnly: Bool = false
   public var sameSite: Cookie.SameSiteType?
-  private var expiry: TimeInterval?
+  var expiry: TimeInterval?
   private var maxAge: Double?
-  private var customValues: [String] = []
+  var customValues: [String] = []
   
-  public var finalizedCookie: Cookie { Cookie(name: name,
-                                              value: value,
-                                              domain: domain,
-                                              path: path,
-                                              secure: secure,
-                                              httpOnly: httpOnly,
-                                              sameSite: sameSite,
-                                              expiry: expiry,
-                                              customValues: customValues)}
+  public var cookie: Cookie { Cookie(cookieBuilder: self) }
   
   public init(name: String, value: String) {
     self.name = name
@@ -40,5 +32,5 @@ public class CookieBuilder: CustomStringConvertible {
   
   public func addCustom(_ value: String) { customValues.append(value) }
   
-  public var description: String { finalizedCookie.description }
+  public var description: String { cookie.description }
 }

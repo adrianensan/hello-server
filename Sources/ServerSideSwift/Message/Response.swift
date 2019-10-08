@@ -2,12 +2,6 @@ import Foundation
 
 public struct Response: CustomStringConvertible {
   
-  public static func new(closure: (ResponseBuilder) -> ()) -> Response {
-    let responseBuilder = ResponseBuilder()
-    closure(responseBuilder)
-    return responseBuilder.finalizedResponse
-  }
-
   public let httpVersion: HTTPVersion = .http1_1
   public let status: ResponseStatus
   public let cookies: [Cookie]
@@ -15,8 +9,29 @@ public struct Response: CustomStringConvertible {
   public let contentType: ContentType
   public let location: String?
   public let lastModifiedDate: Date?
-  public let omitBody: Bool = false
   public let body: Data?
+  
+  init(closure: (ResponseBuilder) -> ()) {
+    let responseBuilder = ResponseBuilder()
+    closure(responseBuilder)
+    self.init(responseBuilder: responseBuilder)
+  }
+  
+  init(responseBuilder: ResponseBuilder) {
+    status = responseBuilder.status
+    cookies = responseBuilder.cookies
+    customeHeaders = responseBuilder.customeHeaders
+    contentType = responseBuilder.contentType
+    location = responseBuilder.location
+    lastModifiedDate = responseBuilder.lastModifiedDate
+    body = !responseBuilder.omitBody ? responseBuilder.body : nil
+  }
+  
+  public static func new(closure: (ResponseBuilder) -> ()) -> Response {
+    let responseBuilder = ResponseBuilder()
+    closure(responseBuilder)
+    return responseBuilder.response
+  }
   
   public var bodyAsString: String? { if let body = body { return String(data: body, encoding: .utf8) } else { return nil } }
   

@@ -34,7 +34,7 @@ extension Response {
             }
             */
             
-            responseBuilder.addCookie(cookieBuilder.finalizedCookie)
+            responseBuilder.addCookie(cookieBuilder.cookie)
           }
         } else {
           let segments = headerLine.lowercased().split(separator: " ")
@@ -51,6 +51,6 @@ extension Response {
       responseBuilder.body = Data(data[bodyStartIndex..<messageEnd])
     }
     
-    return responseBuilder?.finalizedResponse
+    return responseBuilder?.response
   }
 }

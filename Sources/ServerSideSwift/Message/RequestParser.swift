@@ -37,6 +37,6 @@ extension Request {
       requestBuilder.body = Data(data[bodyStartIndex..<data.count])
     }
     
-    return requestBuilder?.finalizedRequest
+    return requestBuilder?.request
   }
 }

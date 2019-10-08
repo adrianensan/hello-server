@@ -9,13 +9,9 @@ public class RequestBuilder: Message, CustomStringConvertible {
   
   weak private var socket: OutgoingSocket?
   
-  public var finalizedRequest: Request { Request(method: method,
-                                                 url: url,
-                                                 host: host,
-                                                 cookies: cookies,
-                                                 body: body)}
+  public var request: Request { Request(requestBuilder: self) }
   
-  public var description: String { finalizedRequest.description }
+  public var description: String { request.description }
   
   override init() { super.init() }
   
@@ -30,7 +26,7 @@ public class RequestBuilder: Message, CustomStringConvertible {
       return
     }
     if host == nil { host = socket.host }
-    socket.sendRequest(finalizedRequest)
+    socket.sendRequest(request)
     if let response = socket.getResponse() { responseHandler(response) }
     else { print("error") }
     self.socket = nil

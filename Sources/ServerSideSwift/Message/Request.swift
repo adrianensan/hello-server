@@ -1,12 +1,6 @@
 import Foundation
 
 public struct Request: CustomStringConvertible {
-  
-  public static func new(closure: (RequestBuilder) -> ()) -> Request {
-    let requestBuilder = RequestBuilder()
-    closure(requestBuilder)
-    return requestBuilder.finalizedRequest
-  }
     
   public let httpVersion: HTTPVersion = .http1_1
   public let method: Method
@@ -14,6 +8,20 @@ public struct Request: CustomStringConvertible {
   let host: String?
   public let cookies: [String: String]
   public let body: Data?
+  
+  init(_ builder: (RequestBuilder) -> Void) {
+    let requestBuilder = RequestBuilder()
+    builder(requestBuilder)
+    self.init(requestBuilder: requestBuilder)
+  }
+  
+  init(requestBuilder: RequestBuilder) {
+    method = requestBuilder.method
+    url = requestBuilder.url
+    host = requestBuilder.host
+    cookies = requestBuilder.cookies
+    body = requestBuilder.body
+  }
   
   public var bodyAsString: String? { if let body = body { return String(data: body, encoding: .utf8) } else { return nil } }
   

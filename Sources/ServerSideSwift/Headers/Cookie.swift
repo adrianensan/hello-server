@@ -7,7 +7,7 @@ public struct Cookie: CustomStringConvertible {
                          closure: ((CookieBuilder) -> ())? = nil) -> Cookie {
     let cookieBuilder = CookieBuilder(name: name, value: value)
     closure?(cookieBuilder)
-    return cookieBuilder.finalizedCookie
+    return cookieBuilder.cookie
   }
     
   public enum SameSiteType {
@@ -31,6 +31,24 @@ public struct Cookie: CustomStringConvertible {
   public let sameSite: SameSiteType?
   public let expiry: TimeInterval?
   public let customValues: [String]
+  
+  init(name: String, value: String, _ builder: ((CookieBuilder) -> Void)? = nil) {
+    let cookieBuilder = CookieBuilder(name: name, value: value)
+    builder?(cookieBuilder)
+    self.init(cookieBuilder: cookieBuilder)
+  }
+  
+  init(cookieBuilder: CookieBuilder) {
+    name = cookieBuilder.name
+    value = cookieBuilder.value
+    domain = cookieBuilder.domain
+    path = cookieBuilder.path
+    secure = cookieBuilder.secure
+    httpOnly = cookieBuilder.httpOnly
+    sameSite = cookieBuilder.sameSite
+    expiry = cookieBuilder.expiry
+    customValues = cookieBuilder.customValues
+  }
   
   public var maxAge: TimeInterval? {
     if let expiry = expiry { return expiry - Date().timeIntervalSince1970 }
