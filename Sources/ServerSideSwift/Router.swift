@@ -7,7 +7,10 @@ class Router {
   static var routingTable: [String: Server] = [:]
   static var listeningPorts: [UInt16: ServerSocket] = [:]
 
-  static func addServer(host: String, port: UInt16, usingTLS: Bool, server: Server) {
+  static func add(server: Server) {
+    let host: String = server.host
+    let port: UInt16 = server.port
+    let usingTLS: Bool = server is SSLServer
     Security.startSecurityMonitor()
     if Router.listeningPorts[port] == nil {
       Router.listeningPorts[port] = ServerSocket(port: port, usingTLS: usingTLS)
@@ -30,7 +33,8 @@ class Router {
     }
       
     routingTable["\(host):\(port)"] = server
-    if server.ignoreRequestHostChecking && routingTable[":\(port)"] == nil { routingTable[":\(port)"] = server }
+    routingTable["\(host):\(port):\(port)"] = server
+    //if server.ignoreRequestHostChecking && routingTable[":\(port)"] == nil { routingTable[":\(port)"] = server }
     signal(SIGPIPE, SIG_IGN)
   }
 
