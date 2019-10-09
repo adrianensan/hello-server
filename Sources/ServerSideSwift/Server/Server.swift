@@ -2,6 +2,8 @@ import Dispatch
 import Foundation
 import OpenSSL
 
+let keyword = "?include:"
+
 public enum AccessControl {
   case acceptAll(blacklist: [String])
   case blockAll(whitelist: [String])
@@ -65,6 +67,23 @@ public class Server {
     return nil
   }
   
+  func replaceIncludes(in data: Data) -> Data {
+    if let originalString = String(data: data, encoding: .utf8) {
+      var string: String = ""
+      for line in originalString.components(separatedBy: .newlines) {
+        if line.trimWhitespace.starts(with: keyword) {
+          if let file = try? String(contentsOfFile: (staticFilesRoot ?? "") + line.trimWhitespace.replacingOccurrences(of: keyword, with: "")) {
+            string += file
+          }
+        }
+        else { string += line + "\n"}
+      }
+      return string.data
+    }
+    
+    return data
+  }
+  
   func staticFileHandler(request: Request, responseBuilder: ResponseBuilder) {
     var url: String = (staticFilesRoot ?? "") + request.url
     
@@ -77,8 +96,9 @@ public class Server {
         let fileNameSplits = fileName.split(separator: ".")
         if let potentialFileExtension = fileNameSplits.last { fileExtension = String(potentialFileExtension) }
       }
-      responseBuilder.body = file
       responseBuilder.contentType = .from(fileExtension: fileExtension)
+      if case .css = responseBuilder.contentType { responseBuilder.body = replaceIncludes(in: file) }
+      else { responseBuilder.body = file }
     } else {
       guard url.last == "/" else {
         responseBuilder.location = httpUrlPrefix + host + request.url + "/"
@@ -88,7 +108,7 @@ public class Server {
       }
       url += "index.html"
       if let file = try? Data(contentsOf: URL(fileURLWithPath: url)) {
-        responseBuilder.body = file
+        responseBuilder.body = replaceIncludes(in: file)
         responseBuilder.contentType = .html
       } else {
         responseBuilder.status = .notFound
