@@ -33,7 +33,6 @@ class Router {
     }
       
     routingTable["\(host):\(port)"] = routingTable["\(host):\(port)"] ?? server
-    //if server.ignoreRequestHostChecking && routingTable[":\(port)"] == nil { routingTable[":\(port)"] = server }
     signal(SIGPIPE, SIG_IGN)
   }
 

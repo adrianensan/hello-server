@@ -36,6 +36,7 @@ public class SSLServer: Server {
   
   init(host: String,
        port: UInt16,
+       accessControl: AccessControl,
        staticFilesRoot: String?,
        endpoints: [ServerEndpoint],
        urlAccessControl: [URLAccess],
@@ -51,7 +52,7 @@ public class SSLServer: Server {
     if SSL_CTX_use_PrivateKey_file(sslContext, sslFiles.privateKey, SSL_FILETYPE_PEM) != 1 {
       fatalError("Failed to use provided preivate key file")
     }
-    super.init(host: host, port: port, staticFilesRoot: staticFilesRoot, endpoints: endpoints, urlAccessControl: urlAccessControl)
+    super.init(host: host, port: port, accessControl: accessControl, staticFilesRoot: staticFilesRoot, endpoints: endpoints, urlAccessControl: urlAccessControl)
   }
   
   override func handleConnection(socket: ClientSocket) {

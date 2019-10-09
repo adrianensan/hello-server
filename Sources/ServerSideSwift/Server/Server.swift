@@ -22,7 +22,7 @@ public class Server {
   static let supportedHTTPVersions: [String] = ["http/1.1"]
   var httpUrlPrefix: String { "http://" }
   
-  var accessControl: AccessControl = .acceptAll(blacklist: [])
+  let accessControl: AccessControl
   public var staticFilesRoot: String?
   var port: UInt16
   var host: String
@@ -38,11 +38,13 @@ public class Server {
   
   init(host: String,
        port: UInt16,
+       accessControl: AccessControl,
        staticFilesRoot: String?,
        endpoints: [ServerEndpoint],
        urlAccessControl: [URLAccess]) {
     self.host = host
     self.port = port
+    self.accessControl = accessControl
     self.staticFilesRoot = staticFilesRoot
     self.endpoints = endpoints
     self.urlAccessControl = urlAccessControl
