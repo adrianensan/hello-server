@@ -39,7 +39,7 @@ public class SSLServer: Server {
        staticFilesRoot: String?,
        endpoints: [ServerEndpoint],
        urlAccessControl: [URLAccess],
-       sslFiles: ServerBuilder.SSLFiles) {
+       sslFiles: SSLFiles) {
     SSL_load_error_strings();
     SSL_library_init();
     OpenSSL_add_all_digests()
@@ -54,7 +54,8 @@ public class SSLServer: Server {
     super.init(host: host, port: port, staticFilesRoot: staticFilesRoot, endpoints: endpoints, urlAccessControl: urlAccessControl)
   }
   
-  func handleConnection(socket: ClientSSLSocket) {
+  override func handleConnection(socket: ClientSocket) {
+    guard let socket = socket as? ClientSSLSocket else { return }
     socket.initSSLConnection(sslContext: sslContext)
     super.handleConnection(socket: socket)
   }

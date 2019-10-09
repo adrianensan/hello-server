@@ -64,7 +64,7 @@ public class Server {
   }
   
   func staticFileHandler(request: Request, responseBuilder: ResponseBuilder) {
-    var url: String = staticFilesRoot ?? "" + request.url
+    var url: String = (staticFilesRoot ?? "") + request.url
     
     if request.method == .head { responseBuilder.omitBody = true }
     
@@ -79,7 +79,6 @@ public class Server {
       responseBuilder.contentType = .from(fileExtension: fileExtension)
     } else {
       guard url.last == "/" else {
-        url += "/"
         responseBuilder.location = httpUrlPrefix + host + request.url + "/"
         responseBuilder.status = .movedPermanently
         responseBuilder.complete()

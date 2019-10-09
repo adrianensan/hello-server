@@ -1,19 +1,18 @@
 import Foundation
 
-public class ServerBuilder {
+public struct SSLFiles {
+  let certificate: String
+  let privateKey: String
   
-  public struct SSLFiles {
-    let certificate: String
-    let privateKey: String
-    
-    public init(certificate: String, privateKey: String) {
-      self.certificate = certificate
-      self.privateKey = privateKey
-    }
+  public init(certificate: String, privateKey: String) {
+    self.certificate = certificate
+    self.privateKey = privateKey
   }
-  
+}
+
+public class ServerBuilder {
   #if DEBUG
-  var host: String { get { "localhost:\(String(describing: port))" } set {} }
+  var host: String { get { "localhost:\(port ??  Socket.defaultDebugPort)" } set {} }
   public var port: UInt16? { get { debugPort ?? Socket.defaultDebugPort } set {} }
   public var sslFiles: SSLFiles? { get { nil } set {} }
   public var ignoreRequestHostChecking: Bool { get { true } set {} }
@@ -67,6 +66,9 @@ public class ServerBuilder {
                                urlAccessControl: urlAccessControl,
                                sslFiles: sslFiles))
       servers.append(httpToHttpsRedirectServer())
+      for hostRedirect in hostRedirects {
+        servers.append(hostRedirectServer(from: hostRedirect.host, withSSL: hostRedirect.sllFiles))
+      }
     }
     else {
       servers.append(Server(host: host,
@@ -77,7 +79,7 @@ public class ServerBuilder {
     }
     
     for hostRedirect in hostRedirects {
-      servers.append(hostRedirectServer(from: hostRedirect.host, withSSL: hostRedirect.sllFiles))
+      servers.append(hostRedirectServer(from: hostRedirect.host, withSSL: nil))
     }
     
     return servers
