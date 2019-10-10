@@ -121,6 +121,11 @@ public class Server {
     responseBuilder.complete()
   }
   
+  func getHTMLForStatus(for status: ResponseStatus) -> String {
+    let customHTML = try? String(contentsOfFile: "\(staticFilesRoot ?? "")/\(status.statusCode).html")
+    return customHTML ?? htmlPage403
+  }
+  
   func handleConnection(socket: ClientSocket) {
     guard accessControl.shouldAllowAccessTo(ipAddress: socket.ipAddress) else { return }
     while let request = socket.acceptRequest() {
@@ -129,7 +134,11 @@ public class Server {
         request.url.starts(with: accessControlRule.url) &&
         !accessControlRule.accessControl.shouldAllowAccessTo(ipAddress: socket.ipAddress) {
           responseBuilder.status = accessControlRule.responseStatus
-          continue
+          if request.method == .get {
+            responseBuilder.bodyString = getHTMLForStatus(for: accessControlRule.responseStatus)
+            responseBuilder.contentType = .html
+          }
+          break
       }
       guard case .ok = responseBuilder.status else {
         responseBuilder.complete()
@@ -137,7 +146,7 @@ public class Server {
       }
       
       if let handler = getHandlerFor(method: request.method, url: request.url) { handler(request, responseBuilder) }
-      else if let _ = staticFilesRoot { staticFileHandler(request: request, responseBuilder: responseBuilder) }
+      else if request.method == .get, let _ = staticFilesRoot { staticFileHandler(request: request, responseBuilder: responseBuilder) }
       else {
         responseBuilder.status = .badRequest
         responseBuilder.complete()
