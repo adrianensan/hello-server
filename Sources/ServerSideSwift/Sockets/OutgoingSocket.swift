@@ -88,13 +88,4 @@ public class OutgoingSocket: Socket {
       }
     }
   }
-  
-  func sendData(data: [UInt8]) {
-    var bytesToSend = data.count
-    repeat {
-      let bytesSent = send(socketFileDescriptor, data, bytesToSend, ClientSocket.socketSendFlags)
-      if bytesSent <= 0 { return }
-      bytesToSend -= bytesSent
-    } while bytesToSend > 0
-  }
 }

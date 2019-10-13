@@ -55,10 +55,10 @@ public class SSLServer: Server {
     super.init(host: host, port: port, accessControl: accessControl, staticFilesRoot: staticFilesRoot, endpoints: endpoints, urlAccessControl: urlAccessControl)
   }
   
-  override func handleConnection(socket: ClientSocket) {
-    guard let socket = socket as? ClientSSLSocket else { return }
-    socket.initSSLConnection(sslContext: sslContext)
-    super.handleConnection(socket: socket)
+  override func handleConnection(connection: ClientConnection) {
+    guard let connection = connection as? SSLClientConnection else { return }
+    guard connection.initAccpetSSLHandshake(sslContext: sslContext) else { return }
+    super.handleConnection(connection: connection)
   }
 
 }

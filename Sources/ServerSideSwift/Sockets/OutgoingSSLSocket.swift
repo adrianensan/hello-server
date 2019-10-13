@@ -72,47 +72,9 @@ public class OutgoingSSLSocket: Socket {
     //close(socketFileDescriptor)
   }
   
-  public func initSSLConnection(sslContext: UnsafeMutablePointer<SSL_CTX>) {
-    sslSocket = SSL_new(sslContext);
-    SSL_set_fd(sslSocket, socketFileDescriptor)
-    //SSL_CTX_set_info_callback(sslContext, infoCallback)
-    let ssl_err = SSL_connect(sslSocket)
-    if ssl_err <= 0 {
-      
-      print("damn failed\(SSL_get_error(sslSocket, 0))")
-      close(socketFileDescriptor)
-      
-    }
-  }
-  
   public func sendAndWait(_ request: Request) -> Response? {
     let requestBytes: [UInt8] = [UInt8](request.data)
-    print(request)
     sendData(data: requestBytes)
-    print("Now waiting")
-    return getResponse()
-  }
-  
-  func getResponse() -> Response? {
-    var responseBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
-    var responseLength: Int = 0
-    while true {
-      let bytesRead = SSL_read(sslSocket, &responseBuffer[responseLength], Int32(Socket.bufferSize - responseLength))
-      guard bytesRead > 0 else { return nil }
-      responseLength += Int(bytesRead)
-      if let response = Response.parse(data: responseBuffer[..<responseLength].filter{ $0 != 13 }) {
-        return response
-      }
-    }
-  }
-  
-  func sendData(data: [UInt8]) {
-    var bytesToSend = data.count
-    repeat {
-      guard let sslSocket = sslSocket else { return }
-      let bytesSent = SSL_write(sslSocket, data, Int32(bytesToSend))
-      if bytesSent <= 0 { return }
-      bytesToSend -= Int(bytesSent)
-    } while bytesToSend > 0
+    return recieveResponse()
   }
 }

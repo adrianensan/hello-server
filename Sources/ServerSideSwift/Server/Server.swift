@@ -126,13 +126,13 @@ public class Server {
     return customHTML ?? htmlPage403
   }
   
-  func handleConnection(socket: ClientSocket) {
-    guard accessControl.shouldAllowAccessTo(ipAddress: socket.ipAddress) else { return }
-    while let request = socket.acceptRequest() {
-      let responseBuilder = ResponseBuilder(clientSocket: socket)
+  func handleConnection(connection: ClientConnection) {
+    guard accessControl.shouldAllowAccessTo(ipAddress: connection.clientAddress) else { return }
+    while let request = connection.getRequest() {
+      let responseBuilder = ResponseBuilder(clientConnection: connection)
       for accessControlRule in urlAccessControl where
         request.url.starts(with: accessControlRule.url) &&
-        !accessControlRule.accessControl.shouldAllowAccessTo(ipAddress: socket.ipAddress) {
+        !accessControlRule.accessControl.shouldAllowAccessTo(ipAddress: connection.clientAddress) {
           responseBuilder.status = accessControlRule.responseStatus
           if request.method == .get {
             responseBuilder.bodyString = getHTMLForStatus(for: accessControlRule.responseStatus)

@@ -50,7 +50,7 @@ class ServerSocket: Socket {
     close(socketFileDescriptor)
   }
   
-  func acceptConnection() -> ClientSocket? {
+  func acceptConnection() -> ClientConnection? {
     var clientAddrressStruct = sockaddr()
     var clientAddressLength = socklen_t(MemoryLayout<sockaddr>.size)
     let newConnectionFD = accept(socketFileDescriptor, &clientAddrressStruct, &clientAddressLength)
@@ -69,12 +69,12 @@ class ServerSocket: Socket {
     
     clientAddressBytes = clientAddressBytes.filter({$0 != 0})
     let clientAddressBytesData = Data(bytes: clientAddressBytes, count: clientAddressBytes.count)
-    let clientAddress = String(data: clientAddressBytesData, encoding: .utf8)
+    guard let clientAddress = String(data: clientAddressBytesData, encoding: .utf8) else { return nil }
     
     if usingTLS {
-      return ClientSSLSocket(socketFD: newConnectionFD, clientAddress: clientAddress)
+      return SSLClientConnection(socket: SSLSocket(socketFD: newConnectionFD), clientAddress: clientAddress)
     } else {
-      return ClientSocket(socketFD: newConnectionFD, clientAddress: clientAddress)
+      return ClientConnection(socket: Socket(socketFD: newConnectionFD), clientAddress: clientAddress)
     }
   }
 }

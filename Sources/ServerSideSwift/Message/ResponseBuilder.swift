@@ -10,14 +10,14 @@ public class ResponseBuilder: Message {
   var cookies: [Cookie] = []
   var customeHeaders: [String] = []
 
-  weak private var socket: ClientSocket?
+  weak private var connection: ClientConnection?
   
   public var response: Response { Response(responseBuilder: self) }
   
-  init(clientSocket: ClientSocket? = nil) {
-    socket = clientSocket
+  init(clientConnection: ClientConnection? = nil) {
+    connection = clientConnection
     super.init()
-    if clientSocket is ClientSSLSocket { addCustomHeader(Header.hstsPrefix) }
+    if connection is SSLClientConnection { addCustomHeader(Header.hstsPrefix) }
   }
   
   public func addCookie(_ cookie: Cookie) {
@@ -36,12 +36,12 @@ public class ResponseBuilder: Message {
   }
   
   public func complete() {
-    guard let socket = socket else {
+    guard let connection = connection else {
       print("Attempted to complete a response after it was already sent, don't do this, nothing happens")
       return
     }
-    socket.sendResponse(response)
-    self.socket = nil
+    connection.send(response: response)
+    self.connection = nil
   }
 }
 
