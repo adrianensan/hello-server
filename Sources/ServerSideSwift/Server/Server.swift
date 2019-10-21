@@ -85,7 +85,7 @@ public class Server {
     return string
   }
   
-  public func staticFileHandler(request: Request, responseBuilder: ResponseBuilder) {
+  func staticFileHandler(request: Request, responseBuilder: ResponseBuilder) {
     var url: String = (staticFilesRoot ?? "") + request.url
     
     if request.method == .head { responseBuilder.omitBody = true }
@@ -107,7 +107,12 @@ public class Server {
       }
       else if let fileData = try? Data(contentsOf: URL(fileURLWithPath: url)) { responseBuilder.body = fileData }
     } else {
-      if url.last != "/" { url += "/" }
+      guard url.last == "/" else {
+        responseBuilder.status = .temporaryRedirect
+        responseBuilder.location = request.url + "/"
+        responseBuilder.complete()
+        return
+      }
       url += "index.html"
       if let fileString = try? String(contentsOfFile: url) {
         responseBuilder.bodyString = replaceIncludes(in: fileString, from: url.replacingOccurrences(of: "index.html", with: ""))
