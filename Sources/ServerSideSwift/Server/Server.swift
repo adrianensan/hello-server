@@ -67,13 +67,17 @@ public class Server {
     return nil
   }
   
-  func replaceIncludes(in originalString: String, depth: Int = 0) -> String {
+  func replaceIncludes(in originalString: String, from currentDirectory: String, depth: Int = 0) -> String {
     guard depth < 3 else { return originalString }
     var string: String = ""
     for line in originalString.components(separatedBy: .newlines) {
       if line.trimWhitespace.starts(with: keyword) {
-        if let fileString = try? String(contentsOfFile: (staticFilesRoot ?? "") + line.trimWhitespace.replacingOccurrences(of: keyword, with: "")) {
-          string += replaceIncludes(in: fileString, depth: depth + 1)
+        let requestFile = line.trimWhitespace.replacingOccurrences(of: keyword, with: "")
+        if requestFile.starts(with: "/"), let fileString = try? String(contentsOfFile: (staticFilesRoot ?? "") + requestFile) {
+          string += replaceIncludes(in: fileString, from: currentDirectory, depth: depth + 1)
+        }
+        else if let fileString = try? String(contentsOfFile: currentDirectory + requestFile) {
+          string += replaceIncludes(in: fileString, from: currentDirectory, depth: depth + 1)
         }
       }
       else { string += line + "\n"}
@@ -96,13 +100,17 @@ public class Server {
       responseBuilder.contentType = .from(fileExtension: fileExtension)
       if case .html = responseBuilder.contentType,
         case .css = responseBuilder.contentType
-      { if let fileString = try? String(contentsOfFile: url) { responseBuilder.bodyString = replaceIncludes(in: fileString) } }
+      {
+        let currentDirectory = String(url[...(url.lastIndex(of: "/") ?? url.endIndex)])
+        if let fileString = try? String(contentsOfFile: url) { responseBuilder.bodyString = replaceIncludes(in: fileString, from: currentDirectory) }
+        
+      }
       else if let fileData = try? Data(contentsOf: URL(fileURLWithPath: url)) { responseBuilder.body = fileData }
     } else {
       if url.last != "/" { url += "/" }
       url += "index.html"
       if let fileString = try? String(contentsOfFile: url) {
-        responseBuilder.bodyString = replaceIncludes(in: fileString)
+        responseBuilder.bodyString = replaceIncludes(in: fileString, from: url.replacingOccurrences(of: "index.html", with: ""))
         responseBuilder.contentType = .html
       } else {
         responseBuilder.status = .notFound
