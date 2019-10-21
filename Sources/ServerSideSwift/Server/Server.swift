@@ -68,7 +68,7 @@ public class Server {
   }
   
   func replaceIncludes(in originalString: String, depth: Int = 0) -> String {
-    guard depth < 3 else { return "" }
+    guard depth < 3 else { return originalString }
     var string: String = ""
     for line in originalString.components(separatedBy: .newlines) {
       if line.trimWhitespace.starts(with: keyword) {
@@ -85,9 +85,8 @@ public class Server {
     var url: String = (staticFilesRoot ?? "") + request.url
     
     if request.method == .head { responseBuilder.omitBody = true }
-
-    let fileURL = URL(fileURLWithPath: url)
-    if (try? fileURL.checkResourceIsReachable()) ?? false {
+    var isDirectory: ObjCBool = ObjCBool(true)
+    if FileManager().fileExists(atPath: url, isDirectory: &isDirectory), !isDirectory.boolValue {
       var fileExtension = ""
       let splits = url.split(separator: "/", omittingEmptySubsequences: true)
       if let fileName = splits.last {
@@ -98,7 +97,7 @@ public class Server {
       if case .html = responseBuilder.contentType,
         case .css = responseBuilder.contentType
       { if let fileString = try? String(contentsOfFile: url) { responseBuilder.bodyString = replaceIncludes(in: fileString) } }
-      else if let fileData = try? Data(contentsOf: fileURL) { responseBuilder.body = fileData }
+      else if let fileData = try? Data(contentsOf: URL(fileURLWithPath: url)) { responseBuilder.body = fileData }
     } else {
       if url.last != "/" { url += "/" }
       url += "index.html"
