@@ -49,9 +49,9 @@ public class Socket {
     } while bytesToSend > 0
   }
   
-  func recieveDataBlock(with flag: Int32 = 0) -> [UInt8]? {
+  func recieveDataBlock() -> [UInt8]? {
     var recieveBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
-    let bytesRead = recv(socketFileDescriptor, &recieveBuffer, Socket.bufferSize, flag)
+    let bytesRead = recv(socketFileDescriptor, &recieveBuffer, Socket.bufferSize, 0)
     guard bytesRead > 0 else { return nil }
     return [UInt8](recieveBuffer[...bytesRead])
   }

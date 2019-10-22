@@ -24,7 +24,7 @@ class SSLClientConnection: ClientConnection {
   }
   
   override func getRequestedHost() -> String? {
-    if let peakedData = socket.recieveDataBlock(with: Int32(MSG_PEEK)) {
+    if let peakedData = socket.peakDataBlock() {
       return SSLClientConnection.getHost(from: peakedData)
     }
     else { return nil }

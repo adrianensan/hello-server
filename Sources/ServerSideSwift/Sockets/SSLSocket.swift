@@ -22,7 +22,14 @@ class SSLSocket: Socket {
     return Int(SSL_write(sslSocket, data, Int32(data.count)))
   }
   
-  override func recieveDataBlock(with flag: Int32) -> [UInt8]? {
+  func peakDataBlock() -> [UInt8]? {
+    var recieveBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
+    let bytesRead = recv(socketFileDescriptor, &recieveBuffer, Socket.bufferSize, Int32(MSG_PEEK))
+    guard bytesRead > 0 else { return nil }
+    return [UInt8](recieveBuffer[...bytesRead])
+  }
+  
+  override func recieveDataBlock() -> [UInt8]? {
     guard let sslSocket = sslSocket else { return nil }
     var recieveBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
     let bytesRead = SSL_read(sslSocket, &recieveBuffer, Int32(Socket.bufferSize))
