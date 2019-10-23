@@ -10,6 +10,14 @@ extension String {
   
   var trimWhitespace: String { trimmingCharacters(in: .whitespaces) }
   var trimNewlines: String { trimmingCharacters(in: .newlines) }
+  
+  var fileExtension: String? {
+    let splits = split(separator: "/", omittingEmptySubsequences: true)
+    guard let fileName = splits.last else { return nil }
+    let fileNameSplits = fileName.split(separator: ".")
+    guard let potentialFileExtension = fileNameSplits.last else { return nil }
+    return String(potentialFileExtension)
+  }
 }
 
 extension Array where Element == UInt8 {

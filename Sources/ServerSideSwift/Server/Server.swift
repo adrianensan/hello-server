@@ -67,42 +67,20 @@ public class Server {
     return nil
   }
   
-  func replaceIncludes(in originalString: String, from currentDirectory: String, depth: Int = 0) -> String {
-    guard depth < 3 else { return originalString }
-    var string: String = ""
-    for line in originalString.components(separatedBy: .newlines) {
-      if line.trimWhitespace.starts(with: keyword) {
-        let requestFile = line.trimWhitespace.replacingOccurrences(of: keyword, with: "")
-        if requestFile.starts(with: "/"), let fileString = try? String(contentsOfFile: (staticFilesRoot ?? "") + requestFile) {
-          string += replaceIncludes(in: fileString, from: currentDirectory, depth: depth + 1)
-        }
-        else if let fileString = try? String(contentsOfFile: currentDirectory + requestFile) {
-          string += replaceIncludes(in: fileString, from: currentDirectory, depth: depth + 1)
-        }
-      }
-      else { string += line + "\n"}
-    }
-    return string
-  }
-  
   func staticFileHandler(request: Request, responseBuilder: ResponseBuilder) {
     var url: String = (staticFilesRoot ?? "") + request.url
     
     if request.method == .head { responseBuilder.omitBody = true }
     var isDirectory: ObjCBool = ObjCBool(true)
     if FileManager().fileExists(atPath: url, isDirectory: &isDirectory), !isDirectory.boolValue {
-      var fileExtension = ""
-      let splits = url.split(separator: "/", omittingEmptySubsequences: true)
-      if let fileName = splits.last {
-        let fileNameSplits = fileName.split(separator: ".")
-        if let potentialFileExtension = fileNameSplits.last { fileExtension = String(potentialFileExtension) }
-      }
-      responseBuilder.contentType = .from(fileExtension: fileExtension)
+      if let fileExtension = url.fileExtension { responseBuilder.contentType = .from(fileExtension: fileExtension) }
       if case .html = responseBuilder.contentType,
         case .css = responseBuilder.contentType
       {
         let currentDirectory = String(url[...(url.lastIndex(of: "/") ?? url.endIndex)])
-        if let fileString = try? String(contentsOfFile: url) { responseBuilder.bodyString = replaceIncludes(in: fileString, from: currentDirectory) }
+        if let fileString = try? String(contentsOfFile: url) { responseBuilder.bodyString = Page.replaceIncludes(in: fileString,
+                                                                                                                 from: currentDirectory,
+                                                                                                                 staticRoot: staticFilesRoot) }
         
       }
       else if let fileData = try? Data(contentsOf: URL(fileURLWithPath: url)) { responseBuilder.body = fileData }
@@ -115,7 +93,9 @@ public class Server {
       }
       url += "index.html"
       if let fileString = try? String(contentsOfFile: url) {
-        responseBuilder.bodyString = replaceIncludes(in: fileString, from: url.replacingOccurrences(of: "index.html", with: ""))
+        responseBuilder.bodyString = Page.replaceIncludes(in: fileString,
+                                                          from: url.replacingOccurrences(of: "index.html", with: ""),
+                                                          staticRoot: staticFilesRoot)
         responseBuilder.contentType = .html
       } else {
         responseBuilder.status = .notFound
