@@ -20,7 +20,16 @@ extension String {
   }
 }
 
+extension UInt8 {
+  public static let nullCharacter: UInt8 = "\0".first!.asciiValue!
+  public static let newlineCharacter: UInt8 = "\n".first!.asciiValue!
+}
+
 extension Array where Element == UInt8 {
+  
+  public static let nullCharacter: UInt8 = "\0".first!.asciiValue!
+  public static let newlineCharacter: UInt8 = "\n".first!.asciiValue!
+  
   var intValue: Int {
     var result: Int = 0
     for i in 0..<count {

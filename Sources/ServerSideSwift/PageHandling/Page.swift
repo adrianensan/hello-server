@@ -9,10 +9,10 @@ public class Page {
       if line.trimWhitespace.starts(with: keyword) {
         let requestFile = line.trimWhitespace.replacingOccurrences(of: keyword, with: "")
         if requestFile.starts(with: "/"), let fileString = try? String(contentsOfFile: (staticRoot ?? "") + requestFile) {
-          string += replaceIncludes(in: fileString, from: directory, depth: depth + 1)
+          string += replaceIncludes(in: fileString, from: directory, staticRoot: staticRoot, depth: depth + 1)
         }
         else if let fileString = try? String(contentsOfFile: directory + requestFile) {
-          string += replaceIncludes(in: fileString, from: directory, depth: depth + 1)
+          string += replaceIncludes(in: fileString, from: directory, staticRoot: staticRoot, depth: depth + 1)
         }
       }
       else { string += line + "\n"}
@@ -22,13 +22,13 @@ public class Page {
   
   let rawPage: String
   
-  init?(filePath: String) {
+  public init?(filePath: String) {
     guard let fileString = try? String(contentsOfFile: filePath) else { return nil }
     let directory = String(filePath[...(filePath.lastIndex(of: "/") ?? filePath.endIndex)])
     
     var staticRoot: String? = nil
     if let staticRootIndex = filePath.range(of: "/static/")?.upperBound {
-      staticRoot = String(filePath[...staticRootIndex])
+      staticRoot = String(filePath[..<staticRootIndex])
     }
     
     rawPage = Page.replaceIncludes(in: fileString, from: directory, staticRoot: staticRoot)
@@ -38,12 +38,13 @@ public class Page {
     self.rawPage = rawPage
   }
   
-  var insertions: [String: String] = [:]
+  public var insertions: [String: String] = [:]
   
-  var compiledPage: String {
+  public var compiledPage: String {
     var compiledPage = rawPage
+//    compiledPage = compiledPage.replacingOccurrences(of: "?insertion:", with: "tlsjkebise gtisuebgiub")
     for (insertionKey, insertion) in insertions {
-      compiledPage.replacingOccurrences(of: "?insertion:${\(insertionKey)}", with: insertion)
+      compiledPage = compiledPage.replacingOccurrences(of: "?insertion:${\(insertionKey)}", with: insertion)
     }
     return compiledPage
   }

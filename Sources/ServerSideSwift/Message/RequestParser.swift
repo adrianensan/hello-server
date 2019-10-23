@@ -3,6 +3,7 @@ import Foundation
 extension Request {
   static func parse(data: [UInt8]) -> Request? {
     var requestBuilder: RequestBuilder?
+    var contentLength: Int?
     guard let headerEnd = Message.findHeaderEnd(data: data) else { return nil }
     let headerFields = data[..<headerEnd].split(separator: 10)
     for headerField in headerFields {
@@ -10,6 +11,8 @@ extension Request {
         if let requestBuilder = requestBuilder {
           if headerLine.lowercased().starts(with: Header.HostPrefix.lowercased()) {
             requestBuilder.host = headerLine.split(separator: ":", maxSplits: 1)[1].trimmingCharacters(in: .whitespaces)
+          } else if headerLine.lowercased().starts(with: Header.contentLengthPrefix.lowercased()) {
+            contentLength = Int(headerLine.split(separator: ":", maxSplits: 1)[1].trimmingCharacters(in: .whitespaces))
           } else if headerLine.starts(with: Header.cookiePrefix) {
             let cookies = headerLine.split(separator: ":", maxSplits: 1)[1].split(separator: ";")
             for cookieAttribute in cookies {
@@ -32,9 +35,25 @@ extension Request {
       }
     }
     
-    let bodyStartIndex = headerEnd + 2
-    if let requestBuilder = requestBuilder, bodyStartIndex < data.count {
-      requestBuilder.body = Data(data[bodyStartIndex..<data.count])
+    if let requestBuilder = requestBuilder {
+      if let contentLength = contentLength {
+        if contentLength > 0 {
+          var index = headerEnd
+          while (data[index] == .newlineCharacter || data[index] == .nullCharacter) && data.count - index > contentLength {
+            index += 1
+          }
+          if data.count - index > contentLength {
+            requestBuilder.body = Data(data[index..<(index + contentLength)])
+          }
+          else { return nil }
+        }
+      }
+      else {
+        let bodyStartIndex = headerEnd + 2
+        if bodyStartIndex < data.count {
+          requestBuilder.body = Data(data[bodyStartIndex..<data.count])
+        }
+      }
     }
     
     return requestBuilder?.request
