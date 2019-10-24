@@ -4,7 +4,7 @@ public class Message {
   
   static func findHeaderEnd(data: [UInt8]) -> Int? {
     for i in 0..<(data.count - 1) {
-      if data[i] == .newlineCharacter && data[i + 1] == .newlineCharacter {
+      if data[i] == 10 && data[i + 1] == 10 {
         return i
       }
     }
@@ -14,7 +14,7 @@ public class Message {
   
   static func findMessageEnd(data: [UInt8]) -> Int? {
     for i in (0..<(data.count - 1)).reversed() {
-      if data[i] == .newlineCharacter && data[i + 1] == 10 {
+      if data[i] == 10 && data[i + 1] == 10 {
         return i
       }
     }

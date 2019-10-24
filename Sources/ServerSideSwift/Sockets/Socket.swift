@@ -53,7 +53,7 @@ public class Socket {
     var recieveBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
     let bytesRead = recv(socketFileDescriptor, &recieveBuffer, Socket.bufferSize, 0)
     guard bytesRead > 0 else { return nil }
-    return [UInt8](recieveBuffer[...bytesRead])
+    return [UInt8](recieveBuffer[..<bytesRead])
   }
   
   func recieveRequest() -> Request? {

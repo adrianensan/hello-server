@@ -52,10 +52,10 @@ extension Cookie: CustomStringConvertible {
   public var description: String {
     var string: String = Header.setCookiePrefix
     string += "\(name)=\(value)"
-    if let expiry = expiry { string += "Expiry=\(Header.httpDateFormater.string(from: Date(timeIntervalSince1970: expiry)))" }
-    if let maxAge = maxAge { string += "Max-Age=\(maxAge)" }
-    if let domain = domain { string += "Domain=\(domain)" }
-    if let path = path { string += "Path=\(path)" }
+    if let expiry = expiry { string += "; Expiry=\(Header.httpDateFormater.string(from: Date(timeIntervalSince1970: expiry)))" }
+    if let maxAge = maxAge { string += "; Max-Age=\(maxAge)" }
+    if let domain = domain { string += "; Domain=\(domain)" }
+    if let path = path { string += "; Path=\(path)" }
     if httpOnly { string += "; HttpOnly)" }
     if secure { string += "; secure" }
     if let sameSite = sameSite { string += "; \(sameSite.description)" }

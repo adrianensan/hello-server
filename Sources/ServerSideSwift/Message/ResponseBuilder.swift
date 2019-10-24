@@ -5,6 +5,7 @@ public class ResponseBuilder: Message {
   public var status: ResponseStatus = .ok
   public var contentType: ContentType = .none
   public var location: String?
+  public var cache: Cache?
   public var lastModifiedDate: Date?
   public var omitBody: Bool = false
   var cookies: [Cookie] = []

@@ -26,7 +26,7 @@ class SSLSocket: Socket {
     var recieveBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
     let bytesRead = recv(socketFileDescriptor, &recieveBuffer, Socket.bufferSize, Int32(MSG_PEEK))
     guard bytesRead > 0 else { return nil }
-    return [UInt8](recieveBuffer[...bytesRead])
+    return [UInt8](recieveBuffer[..<bytesRead])
   }
   
   override func recieveDataBlock() -> [UInt8]? {
@@ -34,6 +34,6 @@ class SSLSocket: Socket {
     var recieveBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
     let bytesRead = SSL_read(sslSocket, &recieveBuffer, Int32(Socket.bufferSize))
     guard bytesRead > 0 else { return nil }
-    return [UInt8](recieveBuffer[...Int(bytesRead)])
+    return [UInt8](recieveBuffer[..<Int(bytesRead)])
   }
 }

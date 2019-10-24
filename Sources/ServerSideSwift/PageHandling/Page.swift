@@ -22,14 +22,10 @@ public class Page {
   
   let rawPage: String
   
-  public init?(filePath: String) {
+  public init?(staticRoot: String, filePath: String) {
+    let filePath = staticRoot + filePath
     guard let fileString = try? String(contentsOfFile: filePath) else { return nil }
     let directory = String(filePath[...(filePath.lastIndex(of: "/") ?? filePath.endIndex)])
-    
-    var staticRoot: String? = nil
-    if let staticRootIndex = filePath.range(of: "/static/")?.upperBound {
-      staticRoot = String(filePath[..<staticRootIndex])
-    }
     
     rawPage = Page.replaceIncludes(in: fileString, from: directory, staticRoot: staticRoot)
   }

@@ -10,6 +10,7 @@ class Header {
   static let contentTypePrefix = "Content-Type: "
   static let contentLengthPrefix = "Content-Length: "
   static let HostPrefix = "Host: "
+  static let cacheControl = "Cache-Control: "
 
   static let httpDateFormater: DateFormatter = {
     let dateFormatter = DateFormatter()

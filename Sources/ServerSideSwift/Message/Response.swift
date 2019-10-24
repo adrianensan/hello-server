@@ -4,6 +4,7 @@ public struct Response {
   
   public let httpVersion: HTTPVersion = .http1_1
   public let status: ResponseStatus
+  public var cache: Cache?
   public let cookies: [Cookie]
   public let customeHeaders: [String]
   public let contentType: ContentType
@@ -19,6 +20,7 @@ public struct Response {
   
   init(responseBuilder: ResponseBuilder) {
     status = responseBuilder.status
+    cache = responseBuilder.cache
     cookies = responseBuilder.cookies
     customeHeaders = responseBuilder.customeHeaders
     contentType = responseBuilder.contentType
@@ -32,6 +34,7 @@ public struct Response {
   private var headerString: String {
     var string: String = httpVersion.description + " " + status.description + .lineBreak
     
+    if let cache = cache { string += cache.description + .lineBreak }
     if let location = location { string += Header.locationPrefix + location + .lineBreak }
     for cookie in cookies { string += cookie.description + .lineBreak }
     if let date = lastModifiedDate { string += Header.lastModifiedPrefix + Header.httpDateFormater.string(from: date) + .lineBreak }

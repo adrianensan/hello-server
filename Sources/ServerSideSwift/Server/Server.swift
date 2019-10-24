@@ -16,7 +16,7 @@ public enum AccessControl {
   }
 }
 
-typealias ServerEndpoint = (method: Method, url: String, handler: (_ request: Request, _ response: ResponseBuilder) -> Void)
+typealias ServerEndpoint = (method: Method, url: String, handler: (_ server: Server, _ request: Request, _ response: ResponseBuilder) -> Void)
 typealias URLAccess = (url: String, accessControl: AccessControl, responseStatus: ResponseStatus)
 
 public class Server {
@@ -52,7 +52,7 @@ public class Server {
     self.urlAccessControl = urlAccessControl
   }
   
-  func getHandlerFor(method: Method, url: String) -> ((Request, ResponseBuilder) -> Void)? {
+  func getHandlerFor(method: Method, url: String) -> ((Server, Request, ResponseBuilder) -> Void)? {
     for handler in endpoints {
       if handler.method == .any || handler.method == method {
         if let end = handler.url.firstIndex(of: "*") {
@@ -132,7 +132,7 @@ public class Server {
         continue
       }
       
-      if let handler = getHandlerFor(method: request.method, url: request.url) { handler(request, responseBuilder) }
+      if let handler = getHandlerFor(method: request.method, url: request.url) { handler(self, request, responseBuilder) }
       else if request.method == .get, let _ = staticFilesRoot { staticFileHandler(request: request, responseBuilder: responseBuilder) }
       else {
         responseBuilder.status = .badRequest
