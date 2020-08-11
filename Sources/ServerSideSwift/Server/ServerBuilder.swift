@@ -38,9 +38,9 @@ public class ServerBuilder {
     self.host = host
   }
   
-  public func addHostRedirect(from host: String, withSSL sllFiles: SSLFiles? = nil) {
+  public func addHostRedirect(from redirectedHost: String, withSSL sllFiles: SSLFiles? = nil) {
     #if !(DEBUG)
-    hostRedirects.append((host: host, sllFiles: sllFiles))
+    hostRedirects.append((host: redirectedHost, sllFiles: sllFiles))
     #endif
   }
   
@@ -69,6 +69,7 @@ public class ServerBuilder {
                                urlAccessControl: urlAccessControl,
                                sslFiles: sslFiles))
       servers.append(httpToHttpsRedirectServer())
+      
       for hostRedirect in hostRedirects {
         servers.append(hostRedirectServer(from: hostRedirect.host, withSSL: hostRedirect.sllFiles))
       }
@@ -89,19 +90,21 @@ public class ServerBuilder {
     return servers
   }
   
-  private func hostRedirectServer(from host: String, withSSL sslFiles: SSLFiles?) -> Server {
-    return Server.new(host: host) {
-      $0.sslFiles = sslFiles
+  private func hostRedirectServer(from redirectedHost: String, withSSL redirectedSSLFiles: SSLFiles?) -> Server {
+    let hostRedirectTo = self.host
+    let hostRedirectSSL = self.sslFiles
+    return Server.new(host: redirectedHost) {
+      $0.sslFiles = redirectedSSLFiles
       $0.addEndpoint(method: .any, url: "*", handler: { (self, request, responseBuilder) in
         responseBuilder.status = .movedPermanently
-        responseBuilder.location = "http\(sslFiles != nil ? "s" : "")://" + self.host + request.url
+        responseBuilder.location = "http\(hostRedirectSSL != nil ? "s" : "")://" + hostRedirectTo + request.url
         responseBuilder.complete()
       })
     }[0]
   }
   
   private func httpToHttpsRedirectServer() -> Server {
-    return Server.new(host: host) {
+    Server.new(host: host) {
       $0.addEndpoint(method: .any, url: "*", handler: { (self, request, responseBuilder) in
         responseBuilder.status = .movedPermanently
         responseBuilder.location = "https://" + self.host + request.url
