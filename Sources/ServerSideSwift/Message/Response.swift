@@ -42,7 +42,7 @@ public struct Response {
     string += "\(Header.datePrefix)" + Header.httpDateFormater.string(from: Date()) + .lineBreak
     string += "\(Header.connection)keep-alive" + .lineBreak
     for cookie in cookies { string += cookie.description + .lineBreak }
-    if let lastModifiedDate = lastModifiedDate { string += Header.lastModifiedPrefix + Header.httpDateFormater.string(from: Date()) + .lineBreak }
+    if let lastModifiedDate = lastModifiedDate { string += Header.lastModifiedPrefix + Header.httpDateFormater.string(from: lastModifiedDate) + .lineBreak }
     for customHeader in customeHeaders { string += customHeader + .lineBreak }
     
     if let body = body {
@@ -59,7 +59,7 @@ public struct Response {
   
   var data: Data {
     var data = headerString.data
-    if !omitBody, let body = body { data += body + (.lineBreak + .lineBreak).data }
+    if let body = body { data += body + (.lineBreak + .lineBreak).data }
     return data
   }
 }
