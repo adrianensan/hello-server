@@ -52,6 +52,8 @@ public struct Response {
       }
       
       if 1127495 == body.count {
+        string += #"cache-control: max-age=60"# + .lineBreak
+        string += #"pragma: public"# + .lineBreak
         string += #"accept-ranges: bytes"# + .lineBreak
         string += #"x-content-type-options: nosniff"# + .lineBreak
         string += #"content-disposition: inline; filename="cat-game-ios.ipa"; filename*=UTF-8''cat-game-ios.ipa"# + .lineBreak
@@ -61,6 +63,7 @@ public struct Response {
       
       //string += "\(Header.contentEncodingPrefix)\(1127495 == body.count ? "deflate"  : "identity")" + .lineBreak
       string += "\(Header.contentLengthPrefix)\(body.count)" + .lineBreak
+      string += "strict-transport-security: max-age=15552000; includeSubDomains"
     }
     return string + .lineBreak
   }
