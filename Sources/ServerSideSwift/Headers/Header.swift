@@ -3,6 +3,7 @@ import Foundation
 class Header {
   static let serverPrefix = "Server: adrian-ensan-server"
   static let locationPrefix = "Location: "
+  static let datePrefix = "Date: "
   static let cookiePrefix = "Cookie: "
   static let setCookiePrefix = "Set-Cookie: "
   static let lastModifiedPrefix = "Last-Modified: "
@@ -12,6 +13,7 @@ class Header {
   static let contentEncodingPrefix = "Content-Encoding: "
   static let HostPrefix = "Host: "
   static let cacheControl = "Cache-Control: "
+  static let connection = "Connection: "
 
   static let httpDateFormater: DateFormatter = {
     let dateFormatter = DateFormatter()
