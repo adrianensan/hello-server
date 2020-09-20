@@ -11,7 +11,6 @@ public struct Response {
   public let location: String?
   public let lastModifiedDate: Date?
   public let body: Data?
-  public let connection: Data?
   
   public let omitBody: Bool
   
