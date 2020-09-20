@@ -65,7 +65,7 @@ public struct Response {
       string += "\(Header.contentLengthPrefix)\(body.count)" + .lineBreak
       string += "strict-transport-security: max-age=15552000; includeSubDomains" + .lineBreak
     }
-    return string + .lineBreak
+    return string + (omitBody ? "" : .lineBreak)
   }
   
   var data: Data {
