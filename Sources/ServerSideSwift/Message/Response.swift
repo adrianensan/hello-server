@@ -42,6 +42,7 @@ public struct Response {
     string += "\(Header.datePrefix)" + Header.httpDateFormater.string(from: Date()) + .lineBreak
     string += "Server: SwiftHttpServer" + .lineBreak
     string += "Accept-Ranges: bytes" + .lineBreak
+    string += "Cache-Control: no-transform,private,max-age=2592000,s-maxage=2592000" + .lineBreak
     for cookie in cookies { string += cookie.description + .lineBreak }
     if let lastModifiedDate = lastModifiedDate { string += Header.lastModifiedPrefix + Header.httpDateFormater.string(from: lastModifiedDate) + .lineBreak }
     for customHeader in customeHeaders { string += customHeader + .lineBreak }
