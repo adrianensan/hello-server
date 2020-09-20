@@ -36,13 +36,10 @@ public struct Response {
   
   private var headerString: String {
     var string: String = httpVersion.description + " " + status.description + .lineBreak
-    
+    string += "Server: AdrianSwiftServer" + .lineBreak
     if let cache = cache { string += cache.description + .lineBreak }
     if let location = location { string += Header.locationPrefix + location + .lineBreak }
-    string += "\(Header.datePrefix)" + Header.httpDateFormater.string(from: Date()) + .lineBreak
-    string += "Server: SwiftHttpServer" + .lineBreak
-    string += "Accept-Ranges: bytes" + .lineBreak
-    string += "Cache-Control: no-transform,private,max-age=2592000,s-maxage=2592000" + .lineBreak
+    string += "\(Header.datePrefix)" + Header.httpDateFormater.string(from: Date() + .lineBreak
     for cookie in cookies { string += cookie.description + .lineBreak }
     if let lastModifiedDate = lastModifiedDate { string += Header.lastModifiedPrefix + Header.httpDateFormater.string(from: lastModifiedDate) + .lineBreak }
     for customHeader in customeHeaders { string += customHeader + .lineBreak }

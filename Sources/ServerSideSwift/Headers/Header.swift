@@ -17,7 +17,7 @@ class Header {
 
   static let httpDateFormater: DateFormatter = {
     let dateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "EEEE, dd LLL yyyy hh:mm:ss zzz"
+    dateFormatter.dateFormat = "E, dd LLL yyyy HH:mm:ss zzz"
     dateFormatter.timeZone = TimeZone(identifier: "GMT")
     return dateFormatter
   }()
