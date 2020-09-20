@@ -63,7 +63,7 @@ public struct Response {
       
       //string += "\(Header.contentEncodingPrefix)\(1127495 == body.count ? "deflate"  : "identity")" + .lineBreak
       string += "\(Header.contentLengthPrefix)\(body.count)" + .lineBreak
-      string += "strict-transport-security: max-age=15552000; includeSubDomains"
+      string += "strict-transport-security: max-age=15552000; includeSubDomains" + .lineBreak
     }
     return string + .lineBreak
   }
