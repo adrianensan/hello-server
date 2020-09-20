@@ -117,7 +117,6 @@ public class Server {
   func handleConnection(connection: ClientConnection) {
     guard accessControl.shouldAllowAccessTo(ipAddress: connection.clientAddress) else { return }
     while let request = connection.getRequest() {
-      print(request)
       let responseBuilder = ResponseBuilder(clientConnection: connection)
       for accessControlRule in urlAccessControl where
         request.url.starts(with: accessControlRule.url) &&
