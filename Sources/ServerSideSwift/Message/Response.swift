@@ -49,6 +49,7 @@ public struct Response {
       default: string += contentType.description + .lineBreak
       }
       
+      string += "\(Header.contentEncodingPrefix)identity" + .lineBreak
       string += "\(Header.contentLengthPrefix)\(body.count)" + .lineBreak
     }
     return string + .lineBreak

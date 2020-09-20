@@ -9,6 +9,7 @@ class Header {
   static let hstsPrefix = "Strict-Transport-Security: max-age=31536000; includeSubDomains"
   static let contentTypePrefix = "Content-Type: "
   static let contentLengthPrefix = "Content-Length: "
+  static let contentEncodingPrefix = "Content-Encoding: "
   static let HostPrefix = "Host: "
   static let cacheControl = "Cache-Control: "
 
