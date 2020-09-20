@@ -60,7 +60,7 @@ public struct Response {
   
   var data: Data {
     var data = headerString.data
-    if !omitBody, let body = body { data += .lineBreak + body + (.lineBreak + .lineBreak).data }
+    if !omitBody, let body = body { data += String.lineBreak.data + body + (.lineBreak + .lineBreak).data }
     return data
   }
 }
