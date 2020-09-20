@@ -50,16 +50,11 @@ public struct Response {
       default: string += contentType.description + .lineBreak
       }
       
-      if case .ipa = contentType {
-        string += "\(Header.contentEncodingPrefix)gzip" + .lineBreak
-      }
-      else {
-        string += "\(Header.contentEncodingPrefix)identity" + .lineBreak
-      }
+      string += "\(Header.contentEncodingPrefix)identity" + .lineBreak
       string += "\(Header.contentLengthPrefix)\(body.count)" + .lineBreak
     }
     string += "\(Header.connection)keep-alive" + .lineBreak
-    return string + .lineBreak
+    return string
   }
   
   var data: Data {
