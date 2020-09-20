@@ -10,7 +10,7 @@ public enum Method: CustomStringConvertible {
   case unknown
   
   static func infer(from string: String) -> Method {
-    switch string {
+    switch string.lowercased() {
     case "get": return .get
     case "head": return .head
     case "post": return .post
