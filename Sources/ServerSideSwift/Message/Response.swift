@@ -53,8 +53,8 @@ public struct Response {
       
       string += "\(Header.contentEncodingPrefix)identity" + .lineBreak
       string += "\(Header.contentLengthPrefix)\(body.count)" + .lineBreak
-      string += "strict-transport-security: max-age=15552000; includeSubDomains" + .lineBreak
     }
+    string += "strict-transport-security: max-age=15552000; includeSubDomains" + .lineBreak
     return string + .lineBreak
   }
   
