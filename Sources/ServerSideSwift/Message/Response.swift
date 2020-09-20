@@ -50,7 +50,12 @@ public struct Response {
       default: string += contentType.description + .lineBreak
       }
       
-      string += "\(Header.contentEncodingPrefix)\(contentType.typeString == "application/octet-stream" ? "gzip" : "identity")" + .lineBreak
+      if case .ipa = contentType {
+        string += "\(Header.contentEncodingPrefix)gzip" + .lineBreak
+      }
+      else {
+        string += "\(Header.contentEncodingPrefix)identity" + .lineBreak
+      }
       string += "\(Header.contentLengthPrefix)\(body.count)" + .lineBreak
     }
     string += "\(Header.connection)keep-alive" + .lineBreak
