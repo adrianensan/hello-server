@@ -2,6 +2,7 @@ import Foundation
 
 extension Request {
   static func parse(data: [UInt8]) -> Request? {
+    print(String(data: Data(data), encoding: .utf8))
     var requestBuilder: RequestBuilder?
     var contentLength: Int?
     guard let headerEnd = Message.findHeaderEnd(data: data) else { return nil }
