@@ -63,6 +63,7 @@ public enum ContentType: CustomStringConvertible {
   case jar
   case ogg
   case bin
+  case ipa
   case other
   case custom(type: String)
   
@@ -122,6 +123,7 @@ public enum ContentType: CustomStringConvertible {
     case         .x7zip: return "application/x-7z-compressed"
     case           .jar: return "application/java-archive"
     case           .ogg: return "application/ogg"
+    case           .ipa: return "application/octet-stream ipa"
     case   .bin, .other: return "application/octet-stream"
     case .custom(let s): return s
     }
@@ -191,6 +193,7 @@ public enum ContentType: CustomStringConvertible {
     case          "7z": return .x7zip
     case         "ogg": return .ogg
     case         "bin": return .bin
+    case         "ipa": return .ipa
                default: return .other
     }
   }
