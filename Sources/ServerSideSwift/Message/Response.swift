@@ -51,6 +51,10 @@ public struct Response {
       default: string += contentType.description + .lineBreak
       }
       
+      if 1127495 == body.count {
+        string += #"content-disposition: inline; filename="cat-game-ios.ipa"; filename*=UTF-8''cat-game-ios.ipa"#
+      }
+      
       string += "\(Header.contentEncodingPrefix)\(1127495 == body.count ? "deflate"  : "identity")" + .lineBreak
       string += "\(Header.contentLengthPrefix)\(body.count)" + .lineBreak
     }
