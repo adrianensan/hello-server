@@ -134,7 +134,7 @@ public class Server {
       }
       
       if let handler = getHandlerFor(method: request.method, url: request.url) { handler(self, request, responseBuilder) }
-      else if request.method == .get, let _ = staticFilesRoot { staticFileHandler(request: request, responseBuilder: responseBuilder) }
+      else if [.get, .head].contains(request.method), let _ = staticFilesRoot { staticFileHandler(request: request, responseBuilder: responseBuilder) }
       else {
         responseBuilder.status = .badRequest
         responseBuilder.complete()
