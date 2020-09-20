@@ -50,7 +50,7 @@ public struct Response {
       default: string += contentType.description + .lineBreak
       }
       
-      string += "\(Header.contentEncodingPrefix)gzip" + .lineBreak
+      string += "\(Header.contentEncodingPrefix)\(contentType.typeString == "application/octet-stream" ? "gzip" : "identity")" + .lineBreak
       string += "\(Header.contentLengthPrefix)\(body.count)" + .lineBreak
     }
     string += "\(Header.connection)keep-alive" + .lineBreak
