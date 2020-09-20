@@ -51,26 +51,16 @@ public struct Response {
       default: string += contentType.description + .lineBreak
       }
       
-      if 1127495 == body.count {
-        string += #"cache-control: max-age=60"# + .lineBreak
-        string += #"pragma: public"# + .lineBreak
-        string += #"accept-ranges: bytes"# + .lineBreak
-        string += #"x-content-type-options: nosniff"# + .lineBreak
-        string += #"content-disposition: inline; filename="cat-game-ios.ipa"; filename*=UTF-8''cat-game-ios.ipa"# + .lineBreak
-        string += #"etag: 1600640474052526n"# + .lineBreak
-        string += #"content-security-policy: form-action 'none' ; report-uri https://www.dropbox.com/csp_log?policy_name=blockserver-noscript ; script-src 'none'"# + .lineBreak
-      }
-      
-      //string += "\(Header.contentEncodingPrefix)\(1127495 == body.count ? "deflate"  : "identity")" + .lineBreak
+      string += "\(Header.contentEncodingPrefix)identity" + .lineBreak
       string += "\(Header.contentLengthPrefix)\(body.count)" + .lineBreak
       string += "strict-transport-security: max-age=15552000; includeSubDomains" + .lineBreak
     }
-    return string + (omitBody ? "" : .lineBreak)
+    return string
   }
   
   var data: Data {
     var data = headerString.data
-    if !omitBody, let body = body { data += body + (.lineBreak + .lineBreak).data }
+    if !omitBody, let body = body { data += .lineBreak + body + (.lineBreak + .lineBreak).data }
     return data
   }
 }
