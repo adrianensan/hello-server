@@ -18,7 +18,7 @@ public class ResponseBuilder: Message {
   init(clientConnection: ClientConnection? = nil) {
     connection = clientConnection
     super.init()
-    if connection is SSLClientConnection { addCustomHeader(Header.hstsPrefix) }
+    //if connection is SSLClientConnection { addCustomHeader(Header.hstsPrefix) }
   }
   
   public func addCookie(_ cookie: Cookie) {
