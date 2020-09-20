@@ -54,7 +54,7 @@ public struct Response {
       string += "\(Header.contentLengthPrefix)\(body.count)" + .lineBreak
     }
     string += "\(Header.connection)keep-alive" + .lineBreak
-    return string
+    return string + .lineBreak
   }
   
   var data: Data {
