@@ -12,6 +12,8 @@ public struct Response {
   public let lastModifiedDate: Date?
   public let body: Data?
   
+  public let omitBody: Bool
+  
   public init(closure: (ResponseBuilder) -> ()) {
     let responseBuilder = ResponseBuilder()
     closure(responseBuilder)
@@ -26,7 +28,8 @@ public struct Response {
     contentType = responseBuilder.contentType
     location = responseBuilder.location
     lastModifiedDate = responseBuilder.lastModifiedDate
-    body = !responseBuilder.omitBody ? responseBuilder.body : nil
+    body = responseBuilder.body
+    omitBody = responseBuilder.omitBody
   }
   
   public var bodyAsString: String? { if let body = body { return String(data: body, encoding: .utf8) } else { return nil } }
@@ -53,7 +56,7 @@ public struct Response {
   
   var data: Data {
     var data = headerString.data
-    if let body = body { data += body + (.lineBreak + .lineBreak).data }
+    if let body = body, !omitBody { data += body + (.lineBreak + .lineBreak).data }
     return data
   }
 }
