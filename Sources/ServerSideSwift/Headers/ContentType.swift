@@ -169,7 +169,7 @@ public enum ContentType: CustomStringConvertible {
     case         "wav": return .wav
     case        "json": return .json
     case       "xhtml": return .xhtml
-    case         "xml": return .xml
+    case "xml", "plist": return .xml
     case         "xul": return .xul
     case         "pdf": return .pdf
     case         "rtf": return .rtf
