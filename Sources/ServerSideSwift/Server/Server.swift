@@ -68,6 +68,7 @@ public class Server {
   }
   
   func staticFileHandler(request: Request, responseBuilder: ResponseBuilder) {
+    print(request.description)
     var url: String = (staticFilesRoot ?? "") + request.url
     
     if request.method == .head { responseBuilder.omitBody = true }
