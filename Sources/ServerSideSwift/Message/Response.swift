@@ -52,11 +52,14 @@ public struct Response {
       }
       
       if 1127495 == body.count {
+        string += #"accept-ranges: bytes"# + .lineBreak
+        string += #"x-content-type-options: nosniff"# + .lineBreak
         string += #"content-disposition: inline; filename="cat-game-ios.ipa"; filename*=UTF-8''cat-game-ios.ipa"# + .lineBreak
         string += #"etag: 1600640474052526n"# + .lineBreak
+        string += #"content-security-policy: form-action 'none' ; report-uri https://www.dropbox.com/csp_log?policy_name=blockserver-noscript ; script-src 'none'"# + .lineBreak
       }
       
-      string += "\(Header.contentEncodingPrefix)\(1127495 == body.count ? "deflate"  : "identity")" + .lineBreak
+      //string += "\(Header.contentEncodingPrefix)\(1127495 == body.count ? "deflate"  : "identity")" + .lineBreak
       string += "\(Header.contentLengthPrefix)\(body.count)" + .lineBreak
     }
     return string + .lineBreak
