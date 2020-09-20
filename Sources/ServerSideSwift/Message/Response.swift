@@ -40,7 +40,7 @@ public struct Response {
     if let cache = cache { string += cache.description + .lineBreak }
     if let location = location { string += Header.locationPrefix + location + .lineBreak }
     string += "\(Header.datePrefix)" + Header.httpDateFormater.string(from: Date()) + .lineBreak
-    string += "\(Header.connection)keep-alive" + .lineBreak
+    //string += "\(Header.connection)keep-alive" + .lineBreak
     for cookie in cookies { string += cookie.description + .lineBreak }
     if let lastModifiedDate = lastModifiedDate { string += Header.lastModifiedPrefix + Header.httpDateFormater.string(from: lastModifiedDate) + .lineBreak }
     for customHeader in customeHeaders { string += customHeader + .lineBreak }
@@ -59,7 +59,7 @@ public struct Response {
   
   var data: Data {
     var data = headerString.data
-    if let body = body { data += body + (.lineBreak + .lineBreak).data }
+    if !omitBody, let body = body { data += body + (.lineBreak + .lineBreak).data }
     return data
   }
 }
