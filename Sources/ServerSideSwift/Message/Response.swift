@@ -39,7 +39,7 @@ public struct Response {
     string += "Server: AdrianSwiftServer" + .lineBreak
     if let cache = cache { string += cache.description + .lineBreak }
     if let location = location { string += Header.locationPrefix + location + .lineBreak }
-    string += "\(Header.datePrefix)" + Header.httpDateFormater.string(from: Date() + .lineBreak
+    string += "\(Header.datePrefix)" + Header.httpDateFormater.string(from: Date()) + .lineBreak
     for cookie in cookies { string += cookie.description + .lineBreak }
     if let lastModifiedDate = lastModifiedDate { string += Header.lastModifiedPrefix + Header.httpDateFormater.string(from: lastModifiedDate) + .lineBreak }
     for customHeader in customeHeaders { string += customHeader + .lineBreak }
