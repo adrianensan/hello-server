@@ -41,7 +41,6 @@ public class ResponseBuilder: Message {
       print("Attempted to complete a response after it was already sent, don't do this, nothing happens")
       return
     }
-    print(response.description)
     connection.send(response: response)
     self.connection = nil
   }
