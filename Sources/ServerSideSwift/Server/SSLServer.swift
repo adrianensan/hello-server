@@ -43,9 +43,14 @@ public class SSLServer: Server {
        sslFiles: SSLFiles) {
     OPENSSL_init_ssl(0, nil)
 
-    //OpenSSL_add_all_digests()
 
     sslContext = SSL_CTX_new(TLS_method())
+
+    SSL_CTX_set_options(sslContext, UInt(SSL_OP_NO_SSLv2))
+    SSL_CTX_set_options(sslContext, UInt(SSL_OP_NO_SSLv3))
+    SSL_CTX_set_options(sslContext, UInt(SSL_OP_NO_TLSv1))
+    SSL_CTX_set_options(sslContext, UInt(SSL_OP_NO_TLSv1_1))
+
     SSL_CTX_set_alpn_select_cb(sslContext, alpn_select_callback, nil)
     if SSL_CTX_use_certificate_chain_file(sslContext, sslFiles.certificate) != 1 {
       fatalError("Failed to use provided certificate file")
