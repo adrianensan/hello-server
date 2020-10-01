@@ -12,7 +12,7 @@ let package = Package(
         pkgConfig: "openssl",
         providers: [
           .apt(["openssl libssl-dev"]),
-          .brew(["openssl"]),
+          .brew(["openssl@1.1"]),
         ]
       ),
       .target(name: "ServerSideSwift", dependencies: ["OpenSSL"])]

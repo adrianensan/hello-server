@@ -10,9 +10,9 @@ class SSLSocket: Socket {
     }
   }*/
   
-  var sslSocket: UnsafeMutablePointer<SSL>?
+  var sslSocket: OpaquePointer?
   
-  public func initSSL(sslContext: UnsafeMutablePointer<SSL_CTX>) {
+  public func initSSL(sslContext: OpaquePointer) {
     sslSocket = SSL_new(sslContext);
     SSL_set_fd(sslSocket, socketFileDescriptor)
   }

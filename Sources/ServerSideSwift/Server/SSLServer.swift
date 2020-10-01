@@ -2,7 +2,7 @@ import Dispatch
 import Foundation
 import OpenSSL
 
-func alpn_select_callback( _ sslSocket: UnsafeMutablePointer<SSL>?,
+func alpn_select_callback( _ sslSocket: OpaquePointer?,
                            _ out: UnsafeMutablePointer<UnsafePointer<UInt8>?>?,
                            _ outlen: UnsafeMutablePointer<UInt8>?,
                            _ supportedProtocols: UnsafePointer<UInt8>?,
@@ -32,7 +32,7 @@ public class SSLServer: Server {
   
   override var httpUrlPrefix: String { "https://" }
   
-  public let sslContext: UnsafeMutablePointer<SSL_CTX>!
+  public let sslContext: OpaquePointer!
   
   init(host: String,
        port: UInt16,
@@ -41,10 +41,11 @@ public class SSLServer: Server {
        endpoints: [ServerEndpoint],
        urlAccessControl: [URLAccess],
        sslFiles: SSLFiles) {
-    SSL_load_error_strings();
-    SSL_library_init();
-    OpenSSL_add_all_digests()
-    sslContext = SSL_CTX_new(TLSv1_method())
+    OPENSSL_init_ssl(0, nil)
+
+    //OpenSSL_add_all_digests()
+
+    sslContext = SSL_CTX_new(TLS_method())
     SSL_CTX_set_alpn_select_cb(sslContext, alpn_select_callback, nil)
     if SSL_CTX_use_certificate_chain_file(sslContext, sslFiles.certificate) != 1 {
       fatalError("Failed to use provided certificate file")

@@ -11,13 +11,13 @@ class SSLClientConnection: ClientConnection {
     super.init(socket: socket, clientAddress: clientAddress)
   }
   
-  func initAccpetSSLHandshake(sslContext: UnsafeMutablePointer<SSL_CTX>) -> Bool {
+  func initAccpetSSLHandshake(sslContext: OpaquePointer) -> Bool {
     socket.initSSL(sslContext: sslContext)
     //SSL_CTX_set_info_callback(sslContext, infoCallback)
     return SSL_accept(socket.sslSocket) > 0
   }
   
-  public func initConnectSSLHandshake(sslContext: UnsafeMutablePointer<SSL_CTX>) -> Bool {
+  public func initConnectSSLHandshake(sslContext: OpaquePointer) -> Bool {
     socket.initSSL(sslContext: sslContext)
     //SSL_CTX_set_info_callback(sslContext, infoCallback)
     return SSL_connect(socket.sslSocket) > 0

@@ -6,7 +6,7 @@ public class OutgoingSSLSocket: Socket {
   
   let host: String
   
-  var sslSocket: UnsafeMutablePointer<SSL>?
+  var sslSocket: OpaquePointer?
   
   public init?(to host: String, port: UInt16 = Socket.defaultHTTPSPort) {
     self.host = host
