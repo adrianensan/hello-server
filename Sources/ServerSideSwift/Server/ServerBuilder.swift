@@ -13,7 +13,7 @@ public struct SSLFiles {
 public class ServerBuilder {
   var name: String = ""
   #if DEBUG
-  var host: String { get { "localhost:\(port ??  Socket.defaultDebugPort)" } set {} }
+  var host: String { get { "localhost" } set {} }
   public var port: UInt16? { get { debugPort ?? Socket.defaultDebugPort } set {} }
   public var sslFiles: SSLFiles? { get { nil } set {} }
   public var ignoreRequestHostChecking: Bool { get { true } set {} }
