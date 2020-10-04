@@ -10,7 +10,7 @@ extension Request {
       if let headerLine = String(data: Data(headerField), encoding: .utf8) {
         if let requestBuilder = requestBuilder {
           if headerLine.lowercased().starts(with: Header.HostPrefix.lowercased()) {
-            requestBuilder.host = headerLine.split(separator: ":", maxSplits: 1)[1].trimmingCharacters(in: .whitespaces)
+            requestBuilder.host = headerLine.split(separator: ":", maxSplits: 2)[1].trimmingCharacters(in: .whitespaces)
           } else if headerLine.lowercased().starts(with: Header.contentLengthPrefix.lowercased()) {
             contentLength = Int(headerLine.split(separator: ":", maxSplits: 1)[1].trimmingCharacters(in: .whitespaces))
           } else if headerLine.starts(with: Header.cookiePrefix) {
