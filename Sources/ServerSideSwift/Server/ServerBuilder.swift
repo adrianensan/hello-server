@@ -15,6 +15,7 @@ public class ServerBuilder {
   #if DEBUG
   var host: String { get { "localhost" } set {} }
   public var port: UInt16? { get { debugPort ?? Socket.getDebugPort() } set {} }
+  public var debugPort: UInt16?
   public var sslFiles: SSLFiles? { get { nil } set {} }
   public var ignoreRequestHostChecking: Bool { get { true } set {} }
   public var accessControl: AccessControl { get { .acceptAll(blacklist: []) } set {} }
@@ -26,7 +27,6 @@ public class ServerBuilder {
   public var accessControl: AccessControl = .acceptAll(blacklist: [])
   #endif
   public var staticFilesRoot: String?
-  public var debugPort: UInt16?
   
   var endpoints: [ServerEndpoint] = []
   var urlAccessControl: [(url: String, accessControl: AccessControl, responseStatus: ResponseStatus)] = []
