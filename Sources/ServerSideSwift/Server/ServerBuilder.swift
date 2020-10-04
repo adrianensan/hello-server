@@ -17,14 +17,12 @@ public class ServerBuilder {
   public var port: UInt16? { get { debugPort ?? Socket.defaultDebugPort } set {} }
   public var sslFiles: SSLFiles? { get { nil } set {} }
   public var ignoreRequestHostChecking: Bool { get { true } set {} }
-  public var debugStaticFilesRoot: String?
   public var accessControl: AccessControl { get { .acceptAll(blacklist: []) } set {} }
   #else
   var host: String
   public var port: UInt16?
   public var sslFiles: SSLFiles?
   public var ignoreRequestHostChecking: Bool = false
-  public var debugStaticFilesRoot: String? { get { nil } set {} }
   public var accessControl: AccessControl = .acceptAll(blacklist: [])
   #endif
   public var staticFilesRoot: String?
@@ -67,7 +65,7 @@ public class ServerBuilder {
                                host: host,
                                port: port ?? Socket.defaultHTTPSPort,
                                accessControl: accessControl,
-                               staticFilesRoot: debugStaticFilesRoot ?? self.staticFilesRoot,
+                               staticFilesRoot: staticFilesRoot,
                                endpoints: endpoints,
                                urlAccessControl: urlAccessControl,
                                sslFiles: sslFiles))
@@ -82,7 +80,7 @@ public class ServerBuilder {
                             host: host,
                             port: port ?? Socket.defaultHTTPPort,
                             accessControl: accessControl,
-                            staticFilesRoot: debugStaticFilesRoot ?? self.staticFilesRoot,
+                            staticFilesRoot: staticFilesRoot,
                             endpoints: endpoints,
                             urlAccessControl: urlAccessControl))
     }
