@@ -14,6 +14,9 @@ class Router {
     Security.startSecurityMonitor()
     if Router.listeningPorts[port] == nil {
       Router.listeningPorts[port] = ServerSocket(port: port, usingTLS: usingTLS)
+      #if DEBUG
+      print("\(host):\(port) - \(server.name)")
+      #endif
       DispatchQueue(label: "listeningSocket-\(port)").async {
         while let newClient = Router.listeningPorts[port]?.acceptConnection() {
           if !Security.shouldAllowConnection(from: newClient.clientAddress) { continue }

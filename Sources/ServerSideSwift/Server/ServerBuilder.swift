@@ -11,6 +11,7 @@ public struct SSLFiles {
 }
 
 public class ServerBuilder {
+  var name: String = ""
   #if DEBUG
   var host: String { get { "localhost:\(port ??  Socket.defaultDebugPort)" } set {} }
   public var port: UInt16? { get { debugPort ?? Socket.defaultDebugPort } set {} }
@@ -34,7 +35,8 @@ public class ServerBuilder {
   var hostRedirects: [(host: String, sllFiles: SSLFiles?)] = []
   
   
-  public init(host: String) {
+  public init(name: String, host: String) {
+    self.name = name
     self.host = host
   }
   
@@ -61,7 +63,8 @@ public class ServerBuilder {
   public var servers: [Server] {
     var servers: [Server]  = []
     if let sslFiles = sslFiles {
-      servers.append(SSLServer(host: host,
+      servers.append(SSLServer(name: name,
+                               host: host,
                                port: port ?? Socket.defaultHTTPSPort,
                                accessControl: accessControl,
                                staticFilesRoot: debugStaticFilesRoot ?? self.staticFilesRoot,
@@ -75,7 +78,8 @@ public class ServerBuilder {
       }
     }
     else {
-      servers.append(Server(host: host,
+      servers.append(Server(name: name,
+                            host: host,
                             port: port ?? Socket.defaultHTTPPort,
                             accessControl: accessControl,
                             staticFilesRoot: debugStaticFilesRoot ?? self.staticFilesRoot,

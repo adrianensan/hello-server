@@ -25,25 +25,28 @@ public class Server {
   var httpUrlPrefix: String { "http://" }
   
   let accessControl: AccessControl
-  public var staticFilesRoot: String?
-  var port: UInt16
-  var host: String
+  public let staticFilesRoot: String?
+  let port: UInt16
+  let host: String
+  let name: String
   
   private let endpoints: [ServerEndpoint]
   private let urlAccessControl: [URLAccess]
   
-  public static func new(host: String, builder: (ServerBuilder) -> Void) -> [Server] {
-    let serverBuilder = ServerBuilder(host: host)
+  public static func new(name: String? = nil, host: String, builder: (ServerBuilder) -> Void) -> [Server] {
+    let serverBuilder = ServerBuilder(name: name ?? host, host: host)
     builder(serverBuilder)
     return serverBuilder.servers
   }
   
-  init(host: String,
+  init(name: String,
+       host: String,
        port: UInt16,
        accessControl: AccessControl,
        staticFilesRoot: String?,
        endpoints: [ServerEndpoint],
        urlAccessControl: [URLAccess]) {
+    self.name = name
     self.host = host
     self.port = port
     self.accessControl = accessControl

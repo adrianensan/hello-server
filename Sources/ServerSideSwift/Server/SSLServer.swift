@@ -34,7 +34,8 @@ public class SSLServer: Server {
   
   public let sslContext: OpaquePointer!
   
-  init(host: String,
+  init(name: String,
+       host: String,
        port: UInt16,
        accessControl: AccessControl,
        staticFilesRoot: String?,
@@ -62,7 +63,7 @@ public class SSLServer: Server {
 //    if SSL_CTX_set_tmp_dh(sslContext, dh) != 1 {
 //      fatalError("Failed to setup forward secrecy")
 //    }
-    super.init(host: host, port: port, accessControl: accessControl, staticFilesRoot: staticFilesRoot, endpoints: endpoints, urlAccessControl: urlAccessControl)
+    super.init(name: name, host: host, port: port, accessControl: accessControl, staticFilesRoot: staticFilesRoot, endpoints: endpoints, urlAccessControl: urlAccessControl)
   }
   
   override func handleConnection(connection: ClientConnection) {
