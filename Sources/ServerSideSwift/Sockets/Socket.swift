@@ -22,7 +22,15 @@ public class Socket {
   
   public static let defaultHTTPPort: UInt16 = 80
   public static let defaultHTTPSPort: UInt16 = 443
-  public static let defaultDebugPort: UInt16 = 8018
+
+  #if DEBUG
+  private static var currentDebugPort: UInt16 = 8018
+  public static func getDebugPort() -> UInt16 {
+    currentDebugPort += 1
+    return currentDebugPort
+  }
+  #endif
+
   static let bufferSize = 100 * 1024
   
   let socketFileDescriptor: Int32

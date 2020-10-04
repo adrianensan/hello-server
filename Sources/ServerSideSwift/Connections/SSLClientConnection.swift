@@ -70,7 +70,8 @@ class SSLClientConnection: ClientConnection {
           pos += 2
           if clientHello.count >= pos + serverNameLength {
             let serverNameData: Data = Data([UInt8](clientHello[pos..<(pos + serverNameLength)]))
-            return String(data: serverNameData, encoding: .utf8) ?? ""
+            let host = String(data: serverNameData, encoding: .utf8) ?? ""
+            return host.components(separatedBy: ":")[0]
           } else {
             return ""
           }

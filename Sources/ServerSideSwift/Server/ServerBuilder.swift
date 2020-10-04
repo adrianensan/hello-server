@@ -14,7 +14,7 @@ public class ServerBuilder {
   var name: String = ""
   #if DEBUG
   var host: String { get { "localhost" } set {} }
-  public var port: UInt16? { get { debugPort ?? Socket.defaultDebugPort } set {} }
+  public var port: UInt16? { get { debugPort ?? Socket.getDebugPort() } set {} }
   public var sslFiles: SSLFiles? { get { nil } set {} }
   public var ignoreRequestHostChecking: Bool { get { true } set {} }
   public var accessControl: AccessControl { get { .acceptAll(blacklist: []) } set {} }

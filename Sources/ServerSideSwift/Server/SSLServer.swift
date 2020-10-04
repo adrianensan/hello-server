@@ -28,6 +28,13 @@ func alpn_select_callback( _ sslSocket: OpaquePointer?,
   return SSL_TLSEXT_ERR_NOACK
 }
 
+public enum TLSVersion {
+  case tls1
+  case tls1_1
+  case tls1_2
+  case tls1_3
+}
+
 public class SSLServer: Server {
   
   override var httpUrlPrefix: String { "https://" }
@@ -41,13 +48,17 @@ public class SSLServer: Server {
        staticFilesRoot: String?,
        endpoints: [ServerEndpoint],
        urlAccessControl: [URLAccess],
-       sslFiles: SSLFiles) {
+       sslFiles: SSLFiles,
+       supportedTLSVersions: [TLSVersion] = [.tls1_2, .tls1_3]) {
     sslContext = SSL_CTX_new(TLS_method())
 
     SSL_CTX_set_options(sslContext, UInt(SSL_OP_NO_SSLv2))
     SSL_CTX_set_options(sslContext, UInt(SSL_OP_NO_SSLv3))
     SSL_CTX_set_options(sslContext, UInt(SSL_OP_NO_TLSv1))
     SSL_CTX_set_options(sslContext, UInt(SSL_OP_NO_TLSv1_1))
+
+    if !supportedTLSVersions.contains(.tls1_2) { SSL_CTX_set_options(sslContext, UInt(SSL_OP_NO_TLSv1_2)) }
+    if !supportedTLSVersions.contains(.tls1_3) { SSL_CTX_set_options(sslContext, UInt(SSL_OP_NO_TLSv1_3)) }
 
     SSL_CTX_set_alpn_select_cb(sslContext, alpn_select_callback, nil)
     if SSL_CTX_use_certificate_chain_file(sslContext, sslFiles.certificate) != 1 {
@@ -71,5 +82,4 @@ public class SSLServer: Server {
     guard connection.initAccpetSSLHandshake(sslContext: sslContext) else { return }
     super.handleConnection(connection: connection)
   }
-
 }
