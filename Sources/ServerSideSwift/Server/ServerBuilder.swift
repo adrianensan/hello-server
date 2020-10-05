@@ -26,7 +26,7 @@ public class ServerBuilder {
   public var ignoreRequestHostChecking: Bool = false
   public var accessControl: AccessControl = .acceptAll(blacklist: [])
   #endif
-  public var staticFilesRoot: String?
+  public var staticFilesRoot: String
   
   var endpoints: [ServerEndpoint] = []
   var urlAccessControl: [(url: String, accessControl: AccessControl, responseStatus: ResponseStatus)] = []
@@ -35,6 +35,8 @@ public class ServerBuilder {
   
   public init(name: String, host: String) {
     self.name = name
+    let staticRoot = ProcessInfo.processInfo.environment["SERVER_STATIC_PATH"]?.trimmingCharacters(in: ["\""]) ?? "./static"
+    self.staticFilesRoot = "\(staticRoot)/\(name)"
     self.host = host
   }
   
