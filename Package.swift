@@ -1,19 +1,24 @@
-// swift-tools-version:5.1
+// swift-tools-version:5.5
 import PackageDescription
+
+let useLocal = true
+
+let opensslPackage: Package.Dependency
+if useLocal {
+  opensslPackage = .package(name: "OpenSSL",
+                              path: "../openssl")
+} else {
+  opensslPackage = .package(name: "OpenSSL",
+                            url: "git@github.com:adrianensan/openssl.git",
+                            .branch("main"))
+}
 
 let package = Package(
     name: "ServerSideSwift",
-    products: [.library(name:"OpenSSL", targets: ["OpenSSL"]),
-               .library(name:"ServerSideSwift", targets: ["ServerSideSwift"])],
-    dependencies: [],
+    platforms: [.iOS(.v12), .macOS(.v10_15)],
+    products: [.library(name:"ServerSideSwift", targets: ["ServerSideSwift"])],
+    dependencies: [opensslPackage],
     targets: [
-      .systemLibrary(
-        name: "OpenSSL",
-        pkgConfig: "openssl",
-        providers: [
-          .apt(["openssl libssl-dev"]),
-          .brew(["openssl@1.1"]),
-        ]
-      ),
-      .target(name: "ServerSideSwift", dependencies: ["OpenSSL"])]
+      .target(name: "ServerSideSwift", dependencies: ["OpenSSL"])
+    ]
 )
