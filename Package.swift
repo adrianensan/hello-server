@@ -1,7 +1,7 @@
 // swift-tools-version:5.5
 import PackageDescription
 
-let useLocal = true
+let useLocal = false
 
 let opensslPackage: Package.Dependency
 if useLocal {
