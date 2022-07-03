@@ -1,21 +1,23 @@
 import Foundation
 
-public struct Request {
+public struct HTTPRequest {
     
+  public var clientAddress: String
   public let httpVersion: HTTPVersion = .http1_1
-  public let method: Method
+  public let method: HTTPMethod
   public let url: String
   let host: String?
   public let cookies: [String: String]
   public let body: Data?
   
-  public init(_ builder: (RequestBuilder) -> Void) {
-    let requestBuilder = RequestBuilder()
+  public init(_ builder: (HTTPRequestBuilder) -> Void) {
+    let requestBuilder = HTTPRequestBuilder()
     builder(requestBuilder)
     self.init(requestBuilder: requestBuilder)
   }
   
-  init(requestBuilder: RequestBuilder) {
+  init(requestBuilder: HTTPRequestBuilder) {
+    clientAddress = requestBuilder.clientAddress ?? ""
     method = requestBuilder.method
     url = requestBuilder.url
     host = requestBuilder.host
@@ -41,7 +43,7 @@ public struct Request {
   }
 }
 
-extension Request: CustomStringConvertible {
+extension HTTPRequest: CustomStringConvertible {
   public var description: String {
     var string = headerString
     if let bodyString = bodyAsString { string += bodyString + .lineBreak }

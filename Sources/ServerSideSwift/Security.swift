@@ -1,4 +1,3 @@
-import Dispatch
 import Foundation
 
 public struct Security {
@@ -38,9 +37,9 @@ public struct Security {
   static func startSecurityMonitor() {
     guard isEnabled && !hasStarted else { return }
     hasStarted = true
-    DispatchQueue(label: "security-monitor").async {
+    Task {
       while true {
-        sleep(1)
+        try? await Task.sleep(nanoseconds: 1000_000_000)
         for (client, reputation) in clientReputation {
           clientReputation[client] = max(0.1, min(1, reputation + 0.5 * reputation))
           if clientReputation[client] == 1 && openConnections[client] ?? 0 == 0 {

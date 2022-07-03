@@ -20,6 +20,16 @@ extension String {
   }
 }
 
+extension URL {
+  var fileExtension: String? {
+    let splits = path.split(separator: "/", omittingEmptySubsequences: true)
+    guard let fileName = splits.last else { return nil }
+    let fileNameSplits = fileName.split(separator: ".")
+    guard let potentialFileExtension = fileNameSplits.last else { return nil }
+    return String(potentialFileExtension)
+  }
+}
+
 extension UInt8 {
   public static let nullCharacter: UInt8 = "\0".first!.asciiValue!
   public static let newlineCharacter: UInt8 = "\n".first!.asciiValue!

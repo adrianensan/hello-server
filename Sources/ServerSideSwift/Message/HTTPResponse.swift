@@ -1,9 +1,13 @@
 import Foundation
 
-public struct Response {
+extension HTTPResponse {
+  static var serverError: HTTPResponse { HTTPResponse(status: .internalServerError) }
+}
+
+public struct HTTPResponse {
   
   public let httpVersion: HTTPVersion = .http1_1
-  public let status: ResponseStatus
+  public let status: HTTPResponseStatus
   public var cache: Cache?
   public let cookies: [Cookie]
   public let customeHeaders: [String]
@@ -13,6 +17,26 @@ public struct Response {
   public let body: Data?
   
   public let omitBody: Bool
+  
+  public init(status: HTTPResponseStatus,
+              cache: Cache? = nil,
+              cookies: [Cookie] = [],
+              customeHeaders: [String] = [],
+              contentType: ContentType = .none,
+              location: String? = nil,
+              lastModifiedDate: Date? = nil,
+              body: Data? = nil,
+              omitBody: Bool = true) {
+    self.status = status
+    self.cache = cache
+    self.cookies = cookies
+    self.customeHeaders = customeHeaders
+    self.contentType = contentType
+    self.location = location
+    self.lastModifiedDate = lastModifiedDate
+    self.body = body
+    self.omitBody = omitBody
+  }
   
   public init(closure: (ResponseBuilder) -> ()) {
     let responseBuilder = ResponseBuilder()
@@ -65,7 +89,7 @@ public struct Response {
   }
 }
 
-extension Response: CustomStringConvertible {
+extension HTTPResponse: CustomStringConvertible {
   public var description: String {
     var string = headerString
     if let bodyString = bodyAsString { string += bodyString + .lineBreak }

@@ -1,6 +1,6 @@
 import Foundation
 
-class ClientSocket: Socket  {
+class ClientSocket: Socket {
   
   var ipAddress: String
   
@@ -14,7 +14,7 @@ class ClientSocket: Socket  {
     Security.connectionClosed(ipAddress: ipAddress)
   }
   
-  func sendResponse(_ response: Response) {
+  func sendResponse(_ response: HTTPResponse) {
     let responseBytes: [UInt8] = [UInt8](response.data)
     sendData(data: responseBytes)
   }

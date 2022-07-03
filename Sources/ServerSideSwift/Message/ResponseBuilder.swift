@@ -2,7 +2,7 @@ import Foundation
 
 public class ResponseBuilder: Message {
     
-  public var status: ResponseStatus = .ok
+  public var status: HTTPResponseStatus = .ok
   public var contentType: ContentType = .none
   public var location: String?
   public var cache: Cache?
@@ -10,15 +10,11 @@ public class ResponseBuilder: Message {
   public var omitBody: Bool = false
   var cookies: [Cookie] = []
   var customeHeaders: [String] = []
-
-  weak private var connection: ClientConnection?
   
-  public var response: Response { Response(responseBuilder: self) }
+  public var response: HTTPResponse { HTTPResponse(responseBuilder: self) }
   
-  init(clientConnection: ClientConnection? = nil) {
-    connection = clientConnection
+  override public init() {
     super.init()
-    //if connection is SSLClientConnection { addCustomHeader(Header.hstsPrefix) }
   }
   
   public func addCookie(_ cookie: Cookie) {
@@ -34,15 +30,6 @@ public class ResponseBuilder: Message {
       if append { body += json }
       else { body = json }
     }
-  }
-  
-  public func complete() {
-    guard let connection = connection else {
-      print("Attempted to complete a response after it was already sent, don't do this, nothing happens")
-      return
-    }
-    connection.send(response: response)
-    self.connection = nil
   }
 }
 

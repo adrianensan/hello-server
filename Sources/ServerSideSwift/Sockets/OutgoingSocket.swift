@@ -69,21 +69,21 @@ public class OutgoingSocket: Socket {
     //close(socketFileDescriptor)
   }
   
-  public func sendAndWait(_ request: Request) -> Response? {
+  public func sendAndWait(_ request: HTTPRequest) -> HTTPResponse? {
     //if request.host == nil { request.host = host }
     let requestBytes: [UInt8] = [UInt8](request.data)
     sendData(data: requestBytes)
     return getResponse()
   }
   
-  func getResponse() -> Response? {
+  func getResponse() -> HTTPResponse? {
     var responseBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
     var responseLength: Int = 0
     while true {
       let bytesRead = read(socketFileDescriptor, &responseBuffer[responseLength], Socket.bufferSize - responseLength)
       guard bytesRead > 0 else { return nil }
       responseLength += bytesRead
-      if let response = Response.parse(data: responseBuffer[..<responseLength].filter{ $0 != 13 }) {
+      if let response = HTTPResponse.parse(data: responseBuffer[..<responseLength].filter{ $0 != 13 }) {
         return response
       }
     }

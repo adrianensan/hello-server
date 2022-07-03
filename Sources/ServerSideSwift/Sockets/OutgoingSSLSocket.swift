@@ -72,9 +72,15 @@ public class OutgoingSSLSocket: Socket {
     //close(socketFileDescriptor)
   }
   
-  public func sendAndWait(_ request: Request) -> Response? {
+  public func sendAndWait(_ request: HTTPRequest) async throws -> HTTPResponse? {
     let requestBytes: [UInt8] = [UInt8](request.data)
     sendData(data: requestBytes)
-    return recieveResponse()
+    var recievedData: [UInt8] = []
+    while true {
+      recievedData += try await recieveDataBlock()
+      if let response = HTTPResponse.parse(data: recievedData.filter{$0 != 13}) {
+        return response
+      }
+    }
   }
 }

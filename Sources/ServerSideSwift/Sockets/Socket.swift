@@ -1,6 +1,13 @@
 import Foundation
 import CoreFoundation
 import OpenSSL
+import System
+
+import HelloLog
+
+enum SocketError: Error {
+  case closed
+}
 
 public class Socket {
     
@@ -22,14 +29,6 @@ public class Socket {
   
   public static let defaultHTTPPort: UInt16 = 80
   public static let defaultHTTPSPort: UInt16 = 443
-
-  #if DEBUG
-  private static var currentDebugPort: UInt16 = 8018
-  public static func getDebugPort() -> UInt16 {
-    currentDebugPort += 1
-    return currentDebugPort
-  }
-  #endif
 
   static let bufferSize = 100 * 1024
   
@@ -57,28 +56,30 @@ public class Socket {
     } while bytesToSend > 0
   }
   
-  func recieveDataBlock() -> [UInt8]? {
+  func rawRecieveData() throws -> [UInt8] {
     var recieveBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
-    let bytesRead = recv(socketFileDescriptor, &recieveBuffer, Socket.bufferSize, 0)
-    guard bytesRead > 0 else { return nil }
-    return [UInt8](recieveBuffer[..<bytesRead])
-  }
-  
-  func recieveRequest() -> Request? {
-    var recievedData: [UInt8] = []
-    while true {
-      guard let bytesRead = recieveDataBlock() else { return nil }
-      recievedData += bytesRead
-      if let request = Request.parse(data: recievedData.filter{$0 != 13}) { return request }
+    let bytesRead = recv(socketFileDescriptor, &recieveBuffer, Socket.bufferSize, MSG_DONTWAIT)
+    guard bytesRead > 0 else {
+      throw Errno(rawValue: errno)
     }
+    Log.verbose("Read \(bytesRead) bytes from \(socketFileDescriptor)", context: "Socket")
+    return [UInt8](recieveBuffer[..<Int(bytesRead)])
   }
   
-  func recieveResponse() -> Response? {
-    var recievedData: [UInt8] = []
+  func recieveDataBlock() async throws -> [UInt8] {
     while true {
-      guard let bytesRead = recieveDataBlock() else { return nil }
-      recievedData += bytesRead
-      if let response = Response.parse(data: recievedData.filter{$0 != 13}) { return response }
+      do {
+        return try rawRecieveData()
+      } catch let error as Errno where error == .resourceTemporarilyUnavailable
+                || error == .wouldBlock {
+        switch await SocketPool.main.waitForChange(on: self) {
+        case .idle: continue
+        case .closed:
+          Log.verbose("Closed \(socketFileDescriptor)", context: "Socket")
+          throw SocketError.closed
+        case .readyToRead: continue
+        }
+      }
     }
   }
 }

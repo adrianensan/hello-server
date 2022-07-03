@@ -1,5 +1,8 @@
 import Foundation
 import OpenSSL
+import System
+
+import HelloLog
 
 class SSLSocket: Socket {
     
@@ -29,11 +32,14 @@ class SSLSocket: Socket {
     return [UInt8](recieveBuffer[..<bytesRead])
   }
   
-  override func recieveDataBlock() -> [UInt8]? {
-    guard let sslSocket = sslSocket else { return nil }
+  override func rawRecieveData() throws -> [UInt8] {
+    guard let sslSocket = sslSocket else { throw SocketError.closed }
     var recieveBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
     let bytesRead = SSL_read(sslSocket, &recieveBuffer, Int32(Socket.bufferSize))
-    guard bytesRead > 0 else { return nil }
+    guard bytesRead > 0 else {
+      throw Errno(rawValue: errno)
+    }
+    Log.verbose("Read \(bytesRead) bytes from \(socketFileDescriptor)", context: "Socket")
     return [UInt8](recieveBuffer[..<Int(bytesRead)])
   }
 }

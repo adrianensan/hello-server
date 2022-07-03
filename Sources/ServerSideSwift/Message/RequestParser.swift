@@ -1,8 +1,8 @@
 import Foundation
 
-extension Request {
-  static func parse(data: [UInt8]) -> Request? {
-    var requestBuilder: RequestBuilder?
+extension HTTPRequest {
+  static func parse(data: [UInt8]) -> HTTPRequest? {
+    var requestBuilder: HTTPRequestBuilder?
     var contentLength: Int?
     guard let headerEnd = Message.findHeaderEnd(data: data) else { return nil }
     let headerFields = data[..<headerEnd].split(separator: 10)
@@ -27,8 +27,8 @@ extension Request {
         } else {
           let segments = headerLine.lowercased().split(separator: " ")
           if segments.count == 3 && segments[2].starts(with: "http/") {
-            requestBuilder = RequestBuilder()
-            requestBuilder?.method = Method.infer(from: String(segments[0]))
+            requestBuilder = HTTPRequestBuilder()
+            requestBuilder?.method = HTTPMethod.infer(from: String(segments[0]))
             requestBuilder?.url = String(segments[1])
           }
         }

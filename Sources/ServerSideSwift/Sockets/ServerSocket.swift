@@ -1,5 +1,6 @@
 import Foundation
 import CoreFoundation
+import System
 
 class ServerSocket: Socket {
     
@@ -20,6 +21,10 @@ class ServerSocket: Socket {
                      SO_REUSEADDR,
                      &value, socklen_t(MemoryLayout<Int32>.size)) != -1 else {
       fatalError("setsockopt failed.")
+    }
+    
+    guard fcntl(socketFileDescriptor, F_SETFL, fcntl(socketFileDescriptor, F_GETFL, 0) | O_NONBLOCK) == 0 else {
+      fatalError("failed to make socket non-blocking.")
     }
     #if !os(Linux)
     guard setsockopt(socketFileDescriptor,
@@ -50,11 +55,23 @@ class ServerSocket: Socket {
     close(socketFileDescriptor)
   }
   
-  func acceptConnection() -> ClientConnection? {
+  func acceptConnection() async -> ClientConnection? {
     var clientAddrressStruct = sockaddr()
     var clientAddressLength = socklen_t(MemoryLayout<sockaddr>.size)
-    let newConnectionFD = accept(socketFileDescriptor, &clientAddrressStruct, &clientAddressLength)
-    guard newConnectionFD != -1 else { return nil }
+    var newConnectionFD: Int32 = -1
+    while true {
+      newConnectionFD = accept(socketFileDescriptor, &clientAddrressStruct, &clientAddressLength)
+      guard newConnectionFD > 0 else {
+        switch Errno(rawValue: errno) {
+        case .resourceTemporarilyUnavailable, .wouldBlock:
+          try? await Task.sleep(nanoseconds: 10_000_000)
+          continue
+        default:
+          return nil
+        }
+      }
+      break
+    }
     
     var clientAddressBytes: [Int8] = [Int8](repeating: 0, count: Int(INET6_ADDRSTRLEN))
     switch clientAddrressStruct.sa_family {
@@ -67,7 +84,7 @@ class ServerSocket: Socket {
     default: break
     }
     
-    clientAddressBytes = clientAddressBytes.filter({$0 != 0})
+    clientAddressBytes = clientAddressBytes.filter {$0 != 0}
     let clientAddressBytesData = Data(bytes: clientAddressBytes, count: clientAddressBytes.count)
     guard let clientAddress = String(data: clientAddressBytesData, encoding: .utf8) else { return nil }
     

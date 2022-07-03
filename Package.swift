@@ -1,24 +1,34 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.6
 import PackageDescription
 
-let useLocal = false
+let useLocal = true
 
 let opensslPackage: Package.Dependency
 if useLocal {
-  opensslPackage = .package(name: "OpenSSL",
-                              path: "../openssl")
+  opensslPackage = .package(name: "OpenSSL", path: "../openssl")
 } else {
-  opensslPackage = .package(name: "OpenSSL",
-                            url: "git@github.com:adrianensan/openssl.git",
-                            .branch("main"))
+  opensslPackage = .package(url: "https://github.com:adrianensan/openssl",
+                            branch: "main")
 }
 
 let package = Package(
     name: "ServerSideSwift",
-    platforms: [.iOS(.v12), .macOS(.v10_15)],
-    products: [.library(name:"ServerSideSwift", targets: ["ServerSideSwift"])],
+    platforms: [.iOS(.v14), .macOS(.v11)],
+    products: [
+      .library(name: "HelloLog", targets: ["HelloLog"]),
+      .library(name: "ServerSideSwift", targets: ["ServerSideSwift"]),
+      .executable(name: "HelloTestServer", targets: ["HelloTestServer"])
+    ],
     dependencies: [opensslPackage],
     targets: [
-      .target(name: "ServerSideSwift", dependencies: ["OpenSSL"])
+      .target(name: "HelloLog",
+              swiftSettings: [.define("DEBUG", .when(configuration: .debug))]),
+      .target(name: "ServerSideSwift",
+              dependencies: ["HelloLog",
+                             .product(name: "OpenSSL", package: "OpenSSL")],
+              swiftSettings: [.define("DEBUG", .when(configuration: .debug))]),
+      .executableTarget(name: "HelloTestServer",
+                        dependencies: ["ServerSideSwift"],
+                        swiftSettings: [.define("DEBUG", .when(configuration: .debug))])
     ]
 )

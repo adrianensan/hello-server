@@ -23,11 +23,11 @@ class SSLClientConnection: ClientConnection {
     return SSL_connect(socket.sslSocket) > 0
   }
   
-  override func getRequestedHost() -> String? {
+  override func getRequestedHost() async throws -> String {
     if let peakedData = socket.peakDataBlock() {
       return SSLClientConnection.getHost(from: peakedData)
     }
-    else { return nil }
+    else { throw SocketError.closed }
   }
   
   static func getHost(from clientHello: [UInt8]) -> String {

@@ -1,13 +1,14 @@
 import Foundation
 
-public class RequestBuilder: Message {
+public class HTTPRequestBuilder: Message {
   
-  public var method: Method = .get
+  public var clientAddress: String?
+  public var method: HTTPMethod = .get
   public var url: String = "/"
   public var host: String?
   public var cookies: [String: String] = [:]
   
-  public var request: Request { Request(requestBuilder: self) }
+  public var request: HTTPRequest { HTTPRequest(requestBuilder: self) }
 }
 
-extension RequestBuilder: CustomStringConvertible { public var description: String { request.description } }
+extension HTTPRequestBuilder: CustomStringConvertible { public var description: String { request.description } }

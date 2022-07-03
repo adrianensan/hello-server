@@ -1,4 +1,4 @@
-public enum Method: CustomStringConvertible {
+public enum HTTPMethod: CustomStringConvertible {
   case get
   case head
   case post
@@ -9,7 +9,7 @@ public enum Method: CustomStringConvertible {
   case any
   case unknown
   
-  static func infer(from string: String) -> Method {
+  static func infer(from string: String) -> HTTPMethod {
     switch string.lowercased() {
     case "get": return .get
     case "head": return .head

@@ -1,4 +1,4 @@
-public enum ResponseStatus: CustomStringConvertible {
+public enum HTTPResponseStatus: CustomStringConvertible {
   case `continue`
   case switchingProtocols
   case ok
@@ -133,12 +133,12 @@ public enum ResponseStatus: CustomStringConvertible {
     }
   }
   
-  static func from(code: String) -> ResponseStatus {
+  static func from(code: String) -> HTTPResponseStatus {
     if let intCode = Int(code) { return from(code: intCode) }
     else { return .custom(code: 0, message: "Unkown") }
   }
   
-  static func from(code: Int) -> ResponseStatus {
+  static func from(code: Int) -> HTTPResponseStatus {
     switch code {
     case 100: return .continue
     case 101: return .switchingProtocols

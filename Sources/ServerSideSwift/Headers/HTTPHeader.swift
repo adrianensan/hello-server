@@ -1,7 +1,7 @@
 import Foundation
 
 class Header {
-  static let serverPrefix = "Server: adrian-ensan-server"
+  static let serverPrefix = "Server: Hello"
   static let locationPrefix = "Location: "
   static let datePrefix = "Date: "
   static let cookiePrefix = "Cookie: "

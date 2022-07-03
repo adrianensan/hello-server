@@ -1,7 +1,7 @@
 import Foundation
 
-extension Response {
-  static func parse(data: [UInt8]) -> Response? {
+extension HTTPResponse {
+  static func parse(data: [UInt8]) -> HTTPResponse? {
     guard let headerEnd = Message.findHeaderEnd(data: data) else { return nil }
     guard let blockEnd = Message.findMessageEnd(data: data) else { return nil }
     var responseBuilder: ResponseBuilder?
@@ -40,7 +40,7 @@ extension Response {
           let segments = headerLine.lowercased().split(separator: " ")
           if segments.count >= 2 && segments[0].starts(with: "http/") {
             responseBuilder = ResponseBuilder()
-            responseBuilder?.status = ResponseStatus.from(code: String(segments[1]))
+            responseBuilder?.status = HTTPResponseStatus.from(code: String(segments[1]))
           }
         }
       }

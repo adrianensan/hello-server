@@ -1,150 +1,75 @@
-import Dispatch
 import Foundation
 import OpenSSL
 
 let keyword = "?include:"
 
 public enum AccessControl {
-  case acceptAll(blacklist: [String])
-  case blockAll(whitelist: [String])
+  case acceptAll(blocklist: [String])
+  case blockAll(allowlist: [String])
   
   func shouldAllowAccessTo(ipAddress: String) -> Bool {
     switch self {
-    case .acceptAll(let blacklist): return !blacklist.contains(ipAddress)
-    case .blockAll(let whitelist): return whitelist.contains(ipAddress)
+    case .acceptAll(let blocklist): return !blocklist.contains(ipAddress)
+    case .blockAll(let allowlist): return allowlist.contains(ipAddress)
     }
   }
 }
 
-typealias ServerEndpoint = (method: Method, url: String, handler: (_ server: Server, _ request: Request, _ response: ResponseBuilder) -> Void)
-typealias URLAccess = (url: String, accessControl: AccessControl, responseStatus: ResponseStatus)
+public struct HTTPEndpoint {
+  public var method: HTTPMethod
+  public var url: String
+  public var handler: (HTTPRequest) async -> HTTPResponse
+  
+  public init(_ method: HTTPMethod, _ url: String, _ handler: @escaping (HTTPRequest) async -> HTTPResponse) {
+    self.method = method
+    self.url = url
+    self.handler = handler
+  }
+  
+  public init(method: HTTPMethod, url: String, handler: @escaping (HTTPRequest) async -> HTTPResponse) {
+    self.method = method
+    self.url = url
+    self.handler = handler
+  }
+}
 
-public class Server {
-    
-  static let supportedHTTPVersions: [String] = ["http/1.1"]
-  var httpUrlPrefix: String { "http://" }
+public struct HTTPRedirect {
+  public var host: String
+  public var sslFiles: SSLFiles?
   
-  let accessControl: AccessControl
-  public let staticFilesRoot: String?
-  let port: UInt16
-  let host: String
-  let name: String
-  
-  private let endpoints: [ServerEndpoint]
-  private let urlAccessControl: [URLAccess]
-  
-  public static func new(name: String? = nil, host: String, builder: (ServerBuilder) -> Void) -> [Server] {
-    let serverBuilder = ServerBuilder(name: name ?? host, host: host)
-    builder(serverBuilder)
-    return serverBuilder.servers
-  }
-  
-  init(name: String,
-       host: String,
-       port: UInt16,
-       accessControl: AccessControl,
-       staticFilesRoot: String?,
-       endpoints: [ServerEndpoint],
-       urlAccessControl: [URLAccess]) {
-    self.name = name
+  public init(from host: String, with sslFiles: SSLFiles? = nil) {
     self.host = host
-    self.port = port
-    self.accessControl = accessControl
-    self.staticFilesRoot = staticFilesRoot
-    self.endpoints = endpoints
-    self.urlAccessControl = urlAccessControl
+    self.sslFiles = sslFiles
   }
+}
+
+public struct HTTPError: Error {
+  public var ccde: HTTPResponseStatus
   
-  func getHandlerFor(method: Method, url: String) -> ((Server, Request, ResponseBuilder) -> Void)? {
-    for handler in endpoints {
-      if handler.method == .any || handler.method == method {
-        if let end = handler.url.firstIndex(of: "*") {
-          if url.starts(with: handler.url[..<end]) {
-            return handler.handler
-          }
-        } else if handler.url == url {
-          return handler.handler
-        }
-      }
-    }
-    return nil
+  public init(ccde: HTTPResponseStatus) {
+    self.ccde = ccde
   }
+}
+
+typealias ServerEndpoint = (method: HTTPMethod, url: String, handler: (_ request: HTTPRequest) async -> HTTPResponse)
+public typealias URLAccess = (url: String, accessControl: AccessControl, responseStatus: HTTPResponseStatus)
+
+public protocol Server: AnyObject {
+  var port: UInt16 { get }
+  var host: String { get }
+  var name: String { get }
   
-  func staticFileHandler(request: Request, responseBuilder: ResponseBuilder) {
-    var url: String = (staticFilesRoot ?? "") + request.url
-    
-    if request.method == .head { responseBuilder.omitBody = true }
-    var isDirectory: ObjCBool = ObjCBool(true)
-    if FileManager().fileExists(atPath: url, isDirectory: &isDirectory), !isDirectory.boolValue {
-      if let fileExtension = url.fileExtension { responseBuilder.contentType = .from(fileExtension: fileExtension) }
-      if case .html = responseBuilder.contentType,
-        case .css = responseBuilder.contentType
-      {
-        let currentDirectory = String(url[...(url.lastIndex(of: "/") ?? url.endIndex)])
-        if let fileString = try? String(contentsOfFile: url) { responseBuilder.bodyString = Page.replaceIncludes(in: fileString,
-                                                                                                                 from: currentDirectory,
-                                                                                                                 staticRoot: staticFilesRoot) }
-        
-      }
-      else if let fileData = try? Data(contentsOf: URL(fileURLWithPath: url)) { responseBuilder.body = fileData }
-    } else {
-      guard url.last == "/" else {
-        responseBuilder.status = .temporaryRedirect
-        responseBuilder.location = request.url + "/"
-        responseBuilder.complete()
-        return
-      }
-      url += "index.html"
-      if let fileString = try? String(contentsOfFile: url) {
-        responseBuilder.bodyString = Page.replaceIncludes(in: fileString,
-                                                          from: url.replacingOccurrences(of: "index.html", with: ""),
-                                                          staticRoot: staticFilesRoot)
-        responseBuilder.contentType = .html
-      } else {
-        responseBuilder.status = .notFound
-        responseBuilder.bodyString = notFoundPage
-        responseBuilder.contentType = .html
-      }
-    }
-    
-    responseBuilder.lastModifiedDate = (try? FileManager.default.attributesOfItem(atPath: url))?[FileAttributeKey.modificationDate] as? Date
-    responseBuilder.complete()
-  }
+  var accessControl: AccessControl { get }
+  var urlAccessControl: [URLAccess] { get }
   
-  func getHTMLForStatus(for status: ResponseStatus) -> String {
-    let customHTML = try? String(contentsOfFile: "\(staticFilesRoot ?? "")/\(status.statusCode).html")
-    return customHTML ?? htmlPage403
-  }
+  func handleConnection(connection: ClientConnection) async throws
+}
+
+public extension Server {
+  var accessControl: AccessControl { .acceptAll(blocklist: []) }
+  var urlAccessControl: [URLAccess] { [] }
   
-  func handleConnection(connection: ClientConnection) {
-    guard accessControl.shouldAllowAccessTo(ipAddress: connection.clientAddress) else { return }
-    while let request = connection.getRequest() {
-      let responseBuilder = ResponseBuilder(clientConnection: connection)
-      for accessControlRule in urlAccessControl where
-        request.url.starts(with: accessControlRule.url) &&
-        !accessControlRule.accessControl.shouldAllowAccessTo(ipAddress: connection.clientAddress) {
-          responseBuilder.status = accessControlRule.responseStatus
-          if request.method == .get {
-            responseBuilder.bodyString = getHTMLForStatus(for: accessControlRule.responseStatus)
-            responseBuilder.contentType = .html
-          }
-          break
-      }
-      guard case .ok = responseBuilder.status else {
-        responseBuilder.complete()
-        continue
-      }
-      
-      if let handler = getHandlerFor(method: request.method, url: request.url) { handler(self, request, responseBuilder) }
-      else if [.get, .head].contains(request.method), let _ = staticFilesRoot { staticFileHandler(request: request, responseBuilder: responseBuilder) }
-      else {
-        responseBuilder.status = .badRequest
-        responseBuilder.complete()
-      }
-    }
-  }
-  
-  public func start() {
+  func start() {
     Router.add(server: self)
   }
 }
