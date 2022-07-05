@@ -1,0 +1,6 @@
+module OpenSSL {
+  umbrella header "openssl.h"
+  link "ssl"
+  link "crypto"
+  export *
+}

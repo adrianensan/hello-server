@@ -8,14 +8,14 @@ public enum Log {
   
   private static func log(level: LogLevel, message: String, context: String) {
     let logStatement = LogStatement(level: level, message: message, context: context)
-    #if DEBUG
+//    #if DEBUG
     print(logStatement.formattedLine)
     logger.log(logStatement)
-    #else
-    if level != .debug {
-      logger.log(logStatement)
-    }
-    #endif
+//    #else
+//    if level != .debug {
+//      logger.log(logStatement)
+//    }
+//    #endif
   }
   
   public static func verbose(_ message: String, context: String) {

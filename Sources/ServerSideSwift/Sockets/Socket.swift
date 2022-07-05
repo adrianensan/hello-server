@@ -1,12 +1,12 @@
 import Foundation
 import CoreFoundation
 import OpenSSL
-import System
 
 import HelloLog
 
 enum SocketError: Error {
   case closed
+  case nothingToRead
 }
 
 public class Socket {
@@ -35,7 +35,11 @@ public class Socket {
   let socketFileDescriptor: Int32
   
   init(socketFD: Int32) {
+    Log.verbose("Opened on \(socketFD)", context: "Socket")
     socketFileDescriptor = socketFD
+    guard fcntl(socketFileDescriptor, F_SETFL, fcntl(socketFileDescriptor, F_GETFL, 0) | O_NONBLOCK) == 0 else {
+      fatalError("failed to make socket non-blocking.")
+    }
   }
   
   deinit {
@@ -58,9 +62,12 @@ public class Socket {
   
   func rawRecieveData() throws -> [UInt8] {
     var recieveBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
-    let bytesRead = recv(socketFileDescriptor, &recieveBuffer, Socket.bufferSize, MSG_DONTWAIT)
+    let bytesRead = recv(socketFileDescriptor, &recieveBuffer, Socket.bufferSize, Int32(MSG_DONTWAIT))
     guard bytesRead > 0 else {
-      throw Errno(rawValue: errno)
+      switch errno {
+      case EAGAIN, EWOULDBLOCK: throw SocketError.nothingToRead
+      default: throw SocketError.closed
+      }
     }
     Log.verbose("Read \(bytesRead) bytes from \(socketFileDescriptor)", context: "Socket")
     return [UInt8](recieveBuffer[..<Int(bytesRead)])
@@ -70,15 +77,8 @@ public class Socket {
     while true {
       do {
         return try rawRecieveData()
-      } catch let error as Errno where error == .resourceTemporarilyUnavailable
-                || error == .wouldBlock {
-        switch await SocketPool.main.waitForChange(on: self) {
-        case .idle: continue
-        case .closed:
-          Log.verbose("Closed \(socketFileDescriptor)", context: "Socket")
-          throw SocketError.closed
-        case .readyToRead: continue
-        }
+      } catch SocketError.nothingToRead {
+        try await SocketPool.main.waitForChange(on: self)
       }
     }
   }

@@ -1,6 +1,7 @@
 import Foundation
 import CoreFoundation
-import System
+
+import HelloLog
 
 class ServerSocket: Socket {
     
@@ -23,9 +24,6 @@ class ServerSocket: Socket {
       fatalError("setsockopt failed.")
     }
     
-    guard fcntl(socketFileDescriptor, F_SETFL, fcntl(socketFileDescriptor, F_GETFL, 0) | O_NONBLOCK) == 0 else {
-      fatalError("failed to make socket non-blocking.")
-    }
     #if !os(Linux)
     guard setsockopt(socketFileDescriptor,
                      SOL_SOCKET,
@@ -55,19 +53,19 @@ class ServerSocket: Socket {
     close(socketFileDescriptor)
   }
   
-  func acceptConnection() async -> ClientConnection? {
+  func acceptConnection() async throws -> ClientConnection {
     var clientAddrressStruct = sockaddr()
     var clientAddressLength = socklen_t(MemoryLayout<sockaddr>.size)
     var newConnectionFD: Int32 = -1
     while true {
       newConnectionFD = accept(socketFileDescriptor, &clientAddrressStruct, &clientAddressLength)
       guard newConnectionFD > 0 else {
-        switch Errno(rawValue: errno) {
-        case .resourceTemporarilyUnavailable, .wouldBlock:
-          try? await Task.sleep(nanoseconds: 10_000_000)
+        switch errno {
+        case EAGAIN, EWOULDBLOCK:
+          try await SocketPool.main.waitForChange(on: self)
           continue
         default:
-          return nil
+          throw SocketError.closed
         }
       }
       break
@@ -86,7 +84,9 @@ class ServerSocket: Socket {
     
     clientAddressBytes = clientAddressBytes.filter {$0 != 0}
     let clientAddressBytesData = Data(bytes: clientAddressBytes, count: clientAddressBytes.count)
-    guard let clientAddress = String(data: clientAddressBytesData, encoding: .utf8) else { return nil }
+    guard let clientAddress = String(data: clientAddressBytesData, encoding: .utf8) else {
+      throw SocketError.closed
+    }
     
     if usingTLS {
       return SSLClientConnection(socket: SSLSocket(socketFD: newConnectionFD), clientAddress: clientAddress)

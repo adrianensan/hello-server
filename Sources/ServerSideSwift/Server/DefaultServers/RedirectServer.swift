@@ -6,9 +6,11 @@ public class HTTPSRedirectServer: HTTPSServer {
   public var sslFiles: SSLFiles
   
   public var name: String { "\(host) Redirect" }
+  public var targetHost: String
   public var host: String
   
-  init(host: String, sslFiles: SSLFiles) {
+  init(from host: String, to targetHost: String, sslFiles: SSLFiles) {
+    self.targetHost = targetHost
     self.host = host
     self.sslFiles = sslFiles
   }
@@ -16,7 +18,7 @@ public class HTTPSRedirectServer: HTTPSServer {
   public func handle(request: HTTPRequest) async throws -> HTTPResponse {
     let responseBuilder = ResponseBuilder()
     responseBuilder.status = .movedPermanently
-    responseBuilder.location = "https://" + self.host + request.url
+    responseBuilder.location = "https://" + self.targetHost + request.url
     return responseBuilder.response
   }
 }
@@ -24,34 +26,36 @@ public class HTTPSRedirectServer: HTTPSServer {
 public class HTTPRedirectServer: HTTPServer {
   
   public var name: String { "\(host) Redirect" }
+  public var targetHost: String
   public var host: String
   
-  init(host: String) {
+  init(from host: String, to targetHost: String) {
+    self.targetHost = targetHost
     self.host = host
   }
   
   public func handle(request: HTTPRequest) async throws -> HTTPResponse {
     let responseBuilder = ResponseBuilder()
     responseBuilder.status = .movedPermanently
-    responseBuilder.location = "https://" + self.host + request.url
+    responseBuilder.location = "https://" + self.targetHost + request.url
     return responseBuilder.response
   }
 }
 
 public extension HTTPServer {
-  func redirectServer(from host: String, with sslFiles: SSLFiles) -> some HTTPSServer {
-    HTTPSRedirectServer(host: host, sslFiles: sslFiles)
+  func redirectServer(from originHost: String, with sslFiles: SSLFiles) -> some HTTPSServer {
+    HTTPSRedirectServer(from: originHost, to: host, sslFiles: sslFiles)
   }
   
-  func redirectServer(from host: String) -> some HTTPServer {
-    HTTPRedirectServer(host: host)
+  func redirectServer(from originHost: String) -> some HTTPServer {
+    HTTPRedirectServer(from: originHost, to: host)
   }
   
   func wwwRedirectServer() -> some HTTPServer {
-    HTTPRedirectServer(host: "www.\(host)")
+    HTTPRedirectServer(from: "www.\(host)", to: host)
   }
   
   func wwwRedirectServer(with sslFiles: SSLFiles) -> some HTTPSServer {
-    HTTPSRedirectServer(host: "www.\(host)", sslFiles: sslFiles)
+    HTTPSRedirectServer(from: "www.\(host)", to: host, sslFiles: sslFiles)
   }
 }

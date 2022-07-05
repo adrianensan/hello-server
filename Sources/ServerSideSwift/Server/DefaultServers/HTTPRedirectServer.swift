@@ -2,11 +2,10 @@ import Foundation
 
 public class HTTPToHTTPSRedirectServer: HTTPServer {
   
-  public var name: String
+  public var name: String { "\(host) Redirect" }
   public var host: String
   
-  init(name: String, host: String) {
-    self.name = name
+  init(host: String) {
     self.host = host
   }
   
@@ -18,8 +17,8 @@ public class HTTPToHTTPSRedirectServer: HTTPServer {
   }
 }
 
-extension HTTPSServer {
+public extension HTTPSServer {
   var httpToHttpsRedirectServer: HTTPServer {
-    HTTPToHTTPSRedirectServer(name: name, host: host)
+    HTTPToHTTPSRedirectServer(host: host)
   }
 }

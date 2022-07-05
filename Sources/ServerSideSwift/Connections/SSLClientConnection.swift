@@ -1,6 +1,12 @@
 import Foundation
 import OpenSSL
 
+import HelloLog
+
+enum SSLError: Error {
+  case initFail
+}
+
 class SSLClientConnection: ClientConnection {
   
   private let socket: SSLSocket
@@ -11,23 +17,31 @@ class SSLClientConnection: ClientConnection {
     super.init(socket: socket, clientAddress: clientAddress)
   }
   
-  func initAccpetSSLHandshake(sslContext: OpaquePointer) -> Bool {
+  func initAccpetSSLHandshake(sslContext: OpaquePointer) async throws -> Void {
     socket.initSSL(sslContext: sslContext)
-    //SSL_CTX_set_info_callback(sslContext, infoCallback)
-    return SSL_accept(socket.sslSocket) > 0
+    
+    while true {
+      switch SSL_accept(socket.sslSocket) {
+      case 1: return
+      case 0: throw SSLError.initFail
+      default:
+        switch SSL_get_error(socket.sslSocket, -1) {
+        case SSL_ERROR_WANT_READ: try await SocketPool.main.waitForChange(on: self.socket)
+        case SSL_ERROR_ZERO_RETURN: throw SocketError.closed
+        default: throw SSLError.initFail
+        }
+      }
+    }
   }
   
   public func initConnectSSLHandshake(sslContext: OpaquePointer) -> Bool {
     socket.initSSL(sslContext: sslContext)
-    //SSL_CTX_set_info_callback(sslContext, infoCallback)
     return SSL_connect(socket.sslSocket) > 0
   }
   
   override func getRequestedHost() async throws -> String {
-    if let peakedData = socket.peakDataBlock() {
-      return SSLClientConnection.getHost(from: peakedData)
-    }
-    else { throw SocketError.closed }
+    let peakedData = try await socket.peakDataBlock()
+    return SSLClientConnection.getHost(from: peakedData)
   }
   
   static func getHost(from clientHello: [UInt8]) -> String {
