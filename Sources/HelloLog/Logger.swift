@@ -16,12 +16,12 @@ public class Logger {
   
   public init(logFile: URL) {
     self.logFile = logFile
-    if let data = try? Data(contentsOf: logFile),
-       let logStatements = try? JSONDecoder().decode([LogStatement].self, from: data) {
-      self.logStatements = logStatements
-    } else {
+//    if let data = try? Data(contentsOf: logFile),
+//       let logStatements = try? JSONDecoder().decode([LogStatement].self, from: data) {
+//      self.logStatements = logStatements
+//    } else {
       logStatements = []
-    }
+//    }
     
     if !FileManager.default.fileExists(atPath: logFile.deletingLastPathComponent().path) {
       try? FileManager.default.createDirectory(at: logFile.deletingLastPathComponent(), withIntermediateDirectories: true)

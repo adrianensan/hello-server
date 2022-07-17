@@ -1,7 +1,9 @@
 import Foundation
 
-extension HTTPRequest {
-  static func parse(data: [UInt8]) -> HTTPRequest? {
+import ServerModels
+
+extension RawHTTPRequest {
+  static func parse(data: [UInt8]) -> RawHTTPRequest? {
     var requestBuilder: HTTPRequestBuilder?
     var contentLength: Int?
     guard let headerEnd = Message.findHeaderEnd(data: data) else { return nil }
@@ -42,13 +44,12 @@ extension HTTPRequest {
           while (data[index] == .newlineCharacter || data[index] == .nullCharacter) && data.count - index > contentLength {
             index += 1
           }
-          if data.count - index > contentLength {
+          if index + contentLength <= data.count {
             requestBuilder.body = Data(data[index..<(index + contentLength)])
           }
           else { return nil }
         }
-      }
-      else {
+      } else {
         let bodyStartIndex = headerEnd + 2
         if bodyStartIndex < data.count {
           requestBuilder.body = Data(data[bodyStartIndex..<data.count])

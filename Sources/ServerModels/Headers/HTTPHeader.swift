@@ -1,6 +1,7 @@
 import Foundation
 
-class Header {
+public enum Header {}
+public extension Header {
   static let serverPrefix = "Server: Hello"
   static let locationPrefix = "Location: "
   static let datePrefix = "Date: "

@@ -5,22 +5,44 @@ import OpenSSL
 import HelloLog
 
 enum SocketError: Error {
+  case initFail
+  case reuseFail
+  case bindFail
+  case listenFail
   case closed
   case nothingToRead
+  case failedToMakeNonBlocking
+}
+
+public enum SocketType {
+  case tcp
+  case udp
+  
+  var systemValue: Int32 {
+    switch self {
+    #if os(Linux)
+    case .tcp: return Int32(SOCK_STREAM.rawValue)
+    case .udp: return Int32(SOCK_DGRAM.rawValue)
+    #else
+    case .tcp: return SOCK_STREAM
+    case .udp: return SOCK_DGRAM
+    #endif
+    }
+  }
 }
 
 public class Socket {
     
   #if os(Linux)
   static let socketSendFlags: Int32 = Int32(MSG_NOSIGNAL)
-  static let socketStremType = Int32(SOCK_STREAM.rawValue)
+  static let socketUDPType = Int32(SOCK_DGRAM.rawValue)
   
   static func hostToNetworkByteOrder(_ port: UInt16) -> UInt16 {
     return CFSwapInt16(port)
   }
   #else
   static let socketSendFlags: Int32 = 0
-  static let socketStremType = SOCK_STREAM
+  static let socketUDPType = SOCK_DGRAM
   
   static func hostToNetworkByteOrder(_ port: UInt16) -> UInt16 {
     return Int(OSHostByteOrder()) == OSLittleEndian ? CFSwapInt16(port) : port
@@ -34,11 +56,11 @@ public class Socket {
   
   let socketFileDescriptor: Int32
   
-  init(socketFD: Int32) {
+  init(socketFD: Int32) throws {
     Log.verbose("Opened on \(socketFD)", context: "Socket")
     socketFileDescriptor = socketFD
     guard fcntl(socketFileDescriptor, F_SETFL, fcntl(socketFileDescriptor, F_GETFL, 0) | O_NONBLOCK) == 0 else {
-      fatalError("failed to make socket non-blocking.")
+      throw SocketError.failedToMakeNonBlocking
     }
   }
   
@@ -46,40 +68,34 @@ public class Socket {
     close(socketFileDescriptor)
   }
   
-  func sendDataPass(data: [UInt8]) -> Int {
-    return send(socketFileDescriptor, data, data.count, ClientSocket.socketSendFlags)
-  }
-  
-  func sendData(data: [UInt8]) {
-    var bytesToSend = data.count
-    var bytesSent = 0
-    repeat {
-      bytesSent += sendDataPass(data: [UInt8](data[bytesSent...]))
-      if bytesSent <= 0 { return }
-      bytesToSend -= bytesSent
-    } while bytesToSend > 0
-  }
-  
-  func rawRecieveData() throws -> [UInt8] {
-    var recieveBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
-    let bytesRead = recv(socketFileDescriptor, &recieveBuffer, Socket.bufferSize, Int32(MSG_DONTWAIT))
-    guard bytesRead > 0 else {
-      switch errno {
-      case EAGAIN, EWOULDBLOCK: throw SocketError.nothingToRead
-      default: throw SocketError.closed
-      }
+  func bindForInbound(to port: UInt16) throws {
+    var value = 1
+    guard setsockopt(socketFileDescriptor,
+                     SOL_SOCKET,
+                     SO_REUSEADDR,
+                     &value, socklen_t(MemoryLayout<Int32>.size)) != -1 else {
+      throw SocketError.reuseFail
     }
-    Log.verbose("Read \(bytesRead) bytes from \(socketFileDescriptor)", context: "Socket")
-    return [UInt8](recieveBuffer[..<Int(bytesRead)])
-  }
-  
-  func recieveDataBlock() async throws -> [UInt8] {
-    while true {
-      do {
-        return try rawRecieveData()
-      } catch SocketError.nothingToRead {
-        try await SocketPool.main.waitForChange(on: self)
-      }
+    
+    #if !os(Linux)
+    guard setsockopt(socketFileDescriptor,
+                     SOL_SOCKET,
+                     SO_NOSIGPIPE,
+                     &value,
+                     socklen_t(MemoryLayout<Int32>.size)) != -1 else {
+      throw SocketError.initFail
+    }
+    #endif
+    
+    var addr = sockaddr_in()
+    addr.sin_family = sa_family_t(AF_INET)
+    addr.sin_port = ServerSocket.hostToNetworkByteOrder(port)
+    addr.sin_addr.s_addr = INADDR_ANY
+    var saddr = sockaddr()
+    memcpy(&saddr, &addr, MemoryLayout<sockaddr_in>.size)
+    guard bind(socketFileDescriptor, &saddr, socklen_t(MemoryLayout<sockaddr_in>.size)) != -1 else {
+      Log.error("Failed to bind socket on port \(port).", context: "Socket")
+      throw SocketError.bindFail
     }
   }
 }

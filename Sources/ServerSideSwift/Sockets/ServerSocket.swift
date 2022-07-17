@@ -9,19 +9,22 @@ class ServerSocket: Socket {
   
   let usingTLS: Bool
   
-  init(port: UInt16, usingTLS: Bool) {
+  init(port: UInt16, usingTLS: Bool) throws {
     self.usingTLS = usingTLS
-    let listeningSocket = socket(AF_INET, ServerSocket.socketStremType, 0)
-    super.init(socketFD: listeningSocket)
+    let listeningSocket = socket(AF_INET, SocketType.tcp.systemValue, 0)
     
-    guard socketFileDescriptor >= 0 else { fatalError("Failed to initialize socket") }
+    guard listeningSocket >= 0 else {
+      throw SocketError.initFail
+    }
+    
+    try super.init(socketFD: listeningSocket)
     
     var value = 1
     guard setsockopt(socketFileDescriptor,
                      SOL_SOCKET,
                      SO_REUSEADDR,
                      &value, socklen_t(MemoryLayout<Int32>.size)) != -1 else {
-      fatalError("setsockopt failed.")
+      throw SocketError.reuseFail
     }
     
     #if !os(Linux)
@@ -30,22 +33,24 @@ class ServerSocket: Socket {
                      SO_NOSIGPIPE,
                      &value,
                      socklen_t(MemoryLayout<Int32>.size)) != -1 else {
-      fatalError("setsockopt failed.")
+      throw SocketError.initFail
     }
     #endif
     
     var addr = sockaddr_in()
-    addr.sin_family = sa_family_t(AF_INET);
-    addr.sin_port = ServerSocket.hostToNetworkByteOrder(port);
-    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_family = sa_family_t(AF_INET)
+    addr.sin_port = ServerSocket.hostToNetworkByteOrder(port)
+    addr.sin_addr.s_addr = INADDR_ANY
     var saddr = sockaddr()
     memcpy(&saddr, &addr, MemoryLayout<sockaddr_in>.size)
     guard bind(socketFileDescriptor, &saddr, socklen_t(MemoryLayout<sockaddr_in>.size)) != -1 else {
-      fatalError("Failed to bind socket on port \(port).")
+      Log.error("Failed to bind socket on port \(port).", context: "Socket")
+      throw SocketError.bindFail
     }
     
     guard listen(socketFileDescriptor, ServerSocket.acceptBacklog) != -1 else {
-      fatalError("Failed to listen on port \(port).")
+      Log.error("Failed to listen on port \(port).", context: "Socket")
+      throw SocketError.listenFail
     }
   }
   
@@ -76,7 +81,7 @@ class ServerSocket: Socket {
     case sa_family_t(AF_INET):
       var ipv4 = sockaddr_in()
       memcpy(&ipv4, &clientAddrressStruct, MemoryLayout<sockaddr_in>.size)
-      inet_ntop(AF_INET, &(ipv4.sin_addr), &clientAddressBytes, socklen_t(INET_ADDRSTRLEN));
+      inet_ntop(AF_INET, &ipv4.sin_addr, &clientAddressBytes, socklen_t(INET_ADDRSTRLEN));
     case sa_family_t(AF_INET6):
       clientAddressBytes = []
     default: break
@@ -89,9 +94,9 @@ class ServerSocket: Socket {
     }
     
     if usingTLS {
-      return SSLClientConnection(socket: SSLSocket(socketFD: newConnectionFD), clientAddress: clientAddress)
+      return try SSLClientConnection(socket: SSLSocket(socketFD: newConnectionFD), clientAddress: clientAddress)
     } else {
-      return ClientConnection(socket: Socket(socketFD: newConnectionFD), clientAddress: clientAddress)
+      return try ClientConnection(socket: TCPSocket(socketFD: newConnectionFD), clientAddress: clientAddress)
     }
   }
 }

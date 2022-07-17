@@ -1,5 +1,7 @@
 import Foundation
 
+import ServerModels
+
 extension HTTPResponse {
   static var serverError: HTTPResponse { HTTPResponse(status: .internalServerError) }
 }
@@ -56,11 +58,17 @@ public struct HTTPResponse {
     omitBody = responseBuilder.omitBody
   }
   
-  public var bodyAsString: String? { if let body = body { return String(data: body, encoding: .utf8) } else { return nil } }
+  public var bodyAsString: String? {
+    if let body = body {
+      return String(data: body, encoding: .utf8)
+    } else {
+      return nil
+    }
+  }
   
   private var headerString: String {
     var string: String = httpVersion.description + " " + status.description + .lineBreak
-    string += "Server: AdrianSwiftServer" + .lineBreak
+    string += "Server: Hello" + .lineBreak
     if let cache = cache { string += cache.description + .lineBreak }
     if let location = location { string += Header.locationPrefix + location + .lineBreak }
     string += "\(Header.datePrefix)" + Header.httpDateFormater.string(from: Date()) + .lineBreak
@@ -77,6 +85,8 @@ public struct HTTPResponse {
       
       string += "\(Header.contentEncodingPrefix)identity" + .lineBreak
       string += "\(Header.contentLengthPrefix)\(body.count)" + .lineBreak
+    } else {
+      string += "\(Header.contentLengthPrefix)0" + .lineBreak
     }
     string += "strict-transport-security: max-age=15552000; includeSubDomains" + .lineBreak
     return string + .lineBreak
@@ -84,7 +94,7 @@ public struct HTTPResponse {
   
   var data: Data {
     var data = headerString.data
-    if !omitBody, let body = body { data += body + (.lineBreak + .lineBreak).data }
+    if !omitBody, let body = body { data += body }
     return data
   }
 }

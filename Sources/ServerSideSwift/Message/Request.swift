@@ -1,6 +1,8 @@
 import Foundation
 
-public struct HTTPRequest {
+import ServerModels
+
+public struct RawHTTPRequest {
     
   public var clientAddress: String
   public let httpVersion: HTTPVersion = .http1_1
@@ -25,7 +27,13 @@ public struct HTTPRequest {
     body = requestBuilder.body
   }
   
-  public var bodyAsString: String? { if let body = body { return String(data: body, encoding: .utf8) } else { return nil } }
+  public var bodyAsString: String? {
+    if let body = body {
+      return String(data: body, encoding: .utf8)
+    } else {
+      return nil
+    }
+  }
   
   private var headerString: String {
     var string: String = method.description + " " + url.description + " " + httpVersion.description + .lineBreak
@@ -43,7 +51,7 @@ public struct HTTPRequest {
   }
 }
 
-extension HTTPRequest: CustomStringConvertible {
+extension RawHTTPRequest: CustomStringConvertible {
   public var description: String {
     var string = headerString
     if let bodyString = bodyAsString { string += bodyString + .lineBreak }

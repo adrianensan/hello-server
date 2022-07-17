@@ -1,18 +1,20 @@
 import Foundation
 
-public protocol HTTPServer: Server {
+import ServerModels
+import HelloLog
+
+public protocol HTTPServer: TCPServer {
   var staticFilesRoot: URL? { get }
   var endpoints: [HTTPEndpoint] { get }
-  
-  func handle(request: HTTPRequest) async throws -> HTTPResponse
 }
 
 public extension HTTPServer {
   var port: UInt16 { 80 }
+  var type: SocketType { .tcp }
   var staticFilesRoot: URL? { nil }
   var endpoints: [HTTPEndpoint] { [] }
   
-  func getHandlerFor(method: HTTPMethod, url: String) -> ((HTTPRequest) async -> HTTPResponse)? {
+  func getHandlerFor(method: HTTPMethod, url: String) -> ((HTTPRequest<Data?>) async throws -> HTTPResponse)? {
     for handler in endpoints {
       if handler.method == .any || handler.method == method {
         if let end = handler.url.firstIndex(of: "*") {
@@ -27,7 +29,7 @@ public extension HTTPServer {
     return nil
   }
   
-  func staticFileHandler(request: HTTPRequest) throws -> HTTPResponse {
+  func staticFileHandler(request: HTTPRequest<Data?>) throws -> HTTPResponse {
     let responseBuilder = ResponseBuilder()
     guard let staticFilesRoot else { throw HTTPError(ccde: .notFound) }
     var url: URL = staticFilesRoot.appendingPathComponent(request.url)
@@ -66,7 +68,7 @@ public extension HTTPServer {
     return responseBuilder.response
   }
   
-  func handle(request: HTTPRequest) async throws -> HTTPResponse {
+  func handle(request: HTTPRequest<Data?>) async throws -> HTTPResponse {
     let responseBuilder = ResponseBuilder()
     for accessControlRule in urlAccessControl where
     request.url.starts(with: accessControlRule.url) &&
@@ -83,7 +85,7 @@ public extension HTTPServer {
     }
     
     if let handler = getHandlerFor(method: request.method, url: request.url) {
-      return await handler(request)
+      return try await handler(request)
     } else if [.get, .head].contains(request.method) && staticFilesRoot != nil {
       return try staticFileHandler(request: request)
     } else {
@@ -103,10 +105,16 @@ public extension HTTPServer {
   func handleConnection(connection: ClientConnection) async throws {
     guard accessControl.shouldAllowAccessTo(ipAddress: connection.clientAddress) else { return }
     for try await request in connection.httpRequests {
+      Log.verbose("Request from \(connection.clientAddress), \(request.url)", context: "HTTP")
       do {
-        connection.send(response: try await handle(request: request))
+        try await connection.send(response: try await handle(request: HTTPRequest(clientAddress: request.clientAddress,
+                                                                                  method: request.method,
+                                                                                  url: request.url,
+                                                                                  host: request.host,
+                                                                                  cookies: request.cookies,
+                                                                                  body: request.body)))
       } catch {
-        connection.send(response: .serverError)
+        try await connection.send(response: .serverError)
       }
     }
   }

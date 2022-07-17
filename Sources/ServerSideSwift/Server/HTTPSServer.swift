@@ -36,16 +36,22 @@ public enum TLSVersion {
   case tls1_3
 }
 
-public protocol HTTPSServer: HTTPServer {
+public protocol SSLServer: TCPServer {
   var sslFiles: SSLFiles { get }
   var sslContext: OpaquePointer! { get set }
+  
+  func setupSSL() throws
+  func handleConnection(sslConnection: SSLClientConnection) async throws
+}
+
+public protocol HTTPSServer: SSLServer, HTTPServer {
 }
 
 public extension HTTPSServer {
   
   var port: UInt16 { 443 }
   
-  func setupSSL() {
+  func setupSSL() throws {
     Log.info("Setting up SSL", context: "SSL")
     sslContext = SSL_CTX_new(TLS_server_method())
 
@@ -63,10 +69,10 @@ public extension HTTPSServer {
     SSL_CTX_set_alpn_protos(sslContext, &supportedProtocols, 9)
 //    SSL_CTX_set_alpn_select_cb(sslContext, alpn_select_callback, nil)
     if SSL_CTX_use_certificate_chain_file(sslContext, sslFiles.certificate) != 1 {
-      fatalError("Failed to use provided certificate file")
+      throw SSLError.certFail
     }
     if SSL_CTX_use_PrivateKey_file(sslContext, sslFiles.privateKey, SSL_FILETYPE_PEM) != 1 {
-      fatalError("Failed to use provided preivate key file")
+      throw SSLError.privateKeyFail
     }
     
 //    SSL_set_read_ahead(sslContext, 1)
@@ -79,28 +85,17 @@ public extension HTTPSServer {
 //    }
   }
   
-  func handleConnection(connection: ClientConnection) async throws {
+  func handleConnection(sslConnection: SSLClientConnection) async throws {
     #if !DEBUG
-    guard let connection = connection as? SSLClientConnection else {
-      Log.error("Expected SSL connection", context: "Connection")
-      return
-    }
-    try await connection.initAccpetSSLHandshake(sslContext: sslContext)
+    try await sslConnection.initAccpetSSLHandshake(sslContext: sslContext)
     #endif
-    guard accessControl.shouldAllowAccessTo(ipAddress: connection.clientAddress) else { return }
-    for try await request in connection.httpRequests {
-      do {
-        connection.send(response: try await handle(request: request))
-      } catch {
-        connection.send(response: .serverError)
-      }
-    }
+    try await handleConnection(connection: sslConnection)
   }
     
-  func start() {
+  func start() async throws {
     #if !DEBUG
-    setupSSL()
+    try setupSSL()
     #endif
-    Router.add(server: self)
+    try await Router.add(server: self)
   }
 }

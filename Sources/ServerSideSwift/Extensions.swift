@@ -48,9 +48,3 @@ extension Array where Element == UInt8 {
     return result
   }
 }
-
-extension Collection where Element: Server {
-  public func start() {
-    forEach { $0.start() }
-  }
-}

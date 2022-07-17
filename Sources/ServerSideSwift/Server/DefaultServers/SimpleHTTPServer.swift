@@ -1,6 +1,6 @@
 import Foundation
 
-public class SimpleHTTPServer: HTTPServer {
+public actor SimpleHTTPServer: HTTPServer {
   
   public var name: String
   public var host: String

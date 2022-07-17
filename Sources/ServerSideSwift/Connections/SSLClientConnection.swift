@@ -5,14 +5,16 @@ import HelloLog
 
 enum SSLError: Error {
   case initFail
+  case certFail
+  case privateKeyFail
 }
 
-class SSLClientConnection: ClientConnection {
+public class SSLClientConnection: ClientConnection {
   
   private let socket: SSLSocket
   private var peakedData: [UInt8]?
   
-  override init(socket: Socket, clientAddress: String) {
+  override init(socket: TCPSocket, clientAddress: String) {
     self.socket = socket as! SSLSocket
     super.init(socket: socket, clientAddress: clientAddress)
   }

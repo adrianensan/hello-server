@@ -1,6 +1,8 @@
 import Foundation
 
-public class HTTPToHTTPSRedirectServer: HTTPServer {
+import ServerModels
+
+public actor HTTPToHTTPSRedirectServer: HTTPServer {
   
   public var name: String { "\(host) Redirect" }
   public var host: String
@@ -9,7 +11,7 @@ public class HTTPToHTTPSRedirectServer: HTTPServer {
     self.host = host
   }
   
-  public func handle(request: HTTPRequest) async throws -> HTTPResponse {
+  public func handle(request: RawHTTPRequest) async throws -> HTTPResponse {
     let responseBuilder = ResponseBuilder()
     responseBuilder.status = .movedPermanently
     responseBuilder.location = "https://" + self.host + request.url

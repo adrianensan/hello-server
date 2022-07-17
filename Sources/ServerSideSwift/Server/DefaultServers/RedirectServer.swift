@@ -1,6 +1,8 @@
 import Foundation
 
-public class HTTPSRedirectServer: HTTPSServer {
+import ServerModels
+
+public actor HTTPSRedirectServer: HTTPSServer {
   
   public var sslContext: OpaquePointer!
   public var sslFiles: SSLFiles
@@ -15,7 +17,7 @@ public class HTTPSRedirectServer: HTTPSServer {
     self.sslFiles = sslFiles
   }
   
-  public func handle(request: HTTPRequest) async throws -> HTTPResponse {
+  public func handle(request: RawHTTPRequest) async throws -> HTTPResponse {
     let responseBuilder = ResponseBuilder()
     responseBuilder.status = .movedPermanently
     responseBuilder.location = "https://" + self.targetHost + request.url
@@ -23,7 +25,7 @@ public class HTTPSRedirectServer: HTTPSServer {
   }
 }
 
-public class HTTPRedirectServer: HTTPServer {
+public actor HTTPRedirectServer: HTTPServer {
   
   public var name: String { "\(host) Redirect" }
   public var targetHost: String
@@ -34,7 +36,7 @@ public class HTTPRedirectServer: HTTPServer {
     self.host = host
   }
   
-  public func handle(request: HTTPRequest) async throws -> HTTPResponse {
+  public func handle(request: RawHTTPRequest) async throws -> HTTPResponse {
     let responseBuilder = ResponseBuilder()
     responseBuilder.status = .movedPermanently
     responseBuilder.location = "https://" + self.targetHost + request.url

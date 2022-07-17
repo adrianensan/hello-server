@@ -3,14 +3,7 @@ import Foundation
 import OpenSSL
 import HelloLog
 
-class SSLSocket: Socket {
-    
-  /*
-  func infoCallback(ssl: UnsafePointer<SSL>?, type: Int32, alertInfo: Int32) {
-    if (type & SSL_CB_HANDSHAKE_START != 0) {
-        
-    }
-  }*/
+class SSLSocket: TCPSocket {
   
   var sslSocket: OpaquePointer?
   
@@ -18,25 +11,15 @@ class SSLSocket: Socket {
     sslSocket = SSL_new(sslContext)
     SSL_set_fd(sslSocket, socketFileDescriptor)
     SSL_set_read_ahead(sslSocket, 1)
-    SSL_set_accept_state(sslSocket)
   }
   
-  override func sendDataPass(data: [UInt8]) -> Int {
+  override func sendDataPass(data: [UInt8]) throws -> Int {
     Log.verbose("Sending \(data.count) bytes to \(socketFileDescriptor)", context: "SSL Socket")
-    guard let sslSocket = sslSocket else { return -1 }
-    return Int(SSL_write(sslSocket, data, Int32(data.count)))
-  }
-  
-  func peakDataBlock() async throws -> [UInt8] {
-    var recieveBuffer: [UInt8] = [UInt8](repeating: 0, count: Socket.bufferSize)
-    let bytesRead = recv(socketFileDescriptor, &recieveBuffer, Socket.bufferSize, Int32(MSG_PEEK))
-    guard bytesRead > 0 else {
-      switch errno {
-      case EAGAIN, EWOULDBLOCK: throw SocketError.nothingToRead
-      default: throw SocketError.closed
-      }
+    guard let sslSocket = sslSocket else {
+      throw SSLError.initFail
     }
-    return [UInt8](recieveBuffer[..<bytesRead])
+    var data = data
+    return Int(SSL_write(sslSocket, &data, Int32(data.count)))
   }
   
   override func rawRecieveData() throws -> [UInt8] {

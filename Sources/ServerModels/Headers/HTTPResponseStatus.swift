@@ -133,12 +133,12 @@ public enum HTTPResponseStatus: CustomStringConvertible {
     }
   }
   
-  static func from(code: String) -> HTTPResponseStatus {
+  public static func from(code: String) -> HTTPResponseStatus {
     if let intCode = Int(code) { return from(code: intCode) }
     else { return .custom(code: 0, message: "Unkown") }
   }
   
-  static func from(code: Int) -> HTTPResponseStatus {
+  public static func from(code: Int) -> HTTPResponseStatus {
     switch code {
     case 100: return .continue
     case 101: return .switchingProtocols
@@ -181,13 +181,6 @@ public enum HTTPResponseStatus: CustomStringConvertible {
     case 504: return .gatewayTimeout
     case 505: return .httpVersionNotSupported
      default: return .custom(code: code, message: "Unkown")
-    }
-  }
-  
-  var defaultPage: String? {
-    switch self {
-    case .notFound: return notFoundPage
-    default: return nil
     }
   }
   

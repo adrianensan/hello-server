@@ -1,5 +1,7 @@
 import Foundation
 
+import ServerModels
+
 public class ResponseBuilder: Message {
     
   public var status: HTTPResponseStatus = .ok

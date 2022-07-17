@@ -1,5 +1,7 @@
 import Foundation
 
+import ServerModels
+
 extension HTTPResponse {
   static func parse(data: [UInt8]) -> HTTPResponse? {
     guard let headerEnd = Message.findHeaderEnd(data: data) else { return nil }

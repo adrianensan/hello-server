@@ -25,9 +25,11 @@ opensslTargetDependency = .target(name: "OpenSSL")
 
 let package = Package(
     name: "ServerSideSwift",
-    platforms: [.iOS(.v15), .macOS(.v11)],
+    platforms: [.iOS(.v15), .macOS(.v12)],
     products: [
       .library(name: "HelloLog", targets: ["HelloLog"]),
+      .library(name: "ServerModels", targets: ["ServerModels"]),
+      .library(name: "HelloAPI", targets: ["HelloAPI"]),
       .library(name: "ServerSideSwift", targets: ["ServerSideSwift"]),
       .executable(name: "HelloTestServer", targets: ["HelloTestServer"])
     ],
@@ -35,8 +37,18 @@ let package = Package(
     targets: additionalTargets + [
       .target(name: "HelloLog",
               swiftSettings: [.define("DEBUG", .when(configuration: .debug))]),
+      .target(name: "ServerModels",
+              swiftSettings: [.define("DEBUG", .when(configuration: .debug))]),
+      .target(name: "HelloAPI",
+              dependencies: ["ServerModels"],
+              path: "Sources/API",
+              swiftSettings: [.define("DEBUG", .when(configuration: .debug))]),
       .target(name: "ServerSideSwift",
-              dependencies: ["HelloLog", opensslTargetDependency,
+              dependencies: [
+                "HelloLog",
+                "ServerModels",
+                "HelloAPI",
+                opensslTargetDependency,
               ],
               swiftSettings: [.define("DEBUG", .when(configuration: .debug))]),
       .executableTarget(name: "HelloTestServer",

@@ -60,6 +60,6 @@ extension Cookie: CustomStringConvertible {
     if secure { string += "; secure" }
     if let sameSite = sameSite { string += "; \(sameSite.description)" }
     for custom in customValues { string += "; \(custom)" }
-    return string.filterNewlines
+    return string
   }
 }

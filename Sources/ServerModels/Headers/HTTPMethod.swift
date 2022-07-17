@@ -9,7 +9,7 @@ public enum HTTPMethod: CustomStringConvertible {
   case any
   case unknown
   
-  static func infer(from string: String) -> HTTPMethod {
+  public static func infer(from string: String) -> HTTPMethod {
     switch string.lowercased() {
     case "get": return .get
     case "head": return .head
@@ -31,7 +31,7 @@ public enum HTTPMethod: CustomStringConvertible {
     case .delete: return "DELETE"
     case .patch: return "PATCH"
     case .options: return "OPTIONS"
-    default: return "UNKOWN"
+    default: return "UNKNOWN"
     }
   }
 }

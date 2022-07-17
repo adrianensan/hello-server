@@ -10,7 +10,7 @@ enum SocketState {
 
 class PoolCancelSignal {
   
-  let inputFD: Int32
+  private let inputFD: Int32
   let outputFD: Int32
   
   init() {
@@ -58,11 +58,11 @@ class SocketPoller {
       var pollfds = ([cancelSocket.outputFD] + observedSockets).map {
         pollfd(fd: $0, events: Int16(POLLIN | POLLPRI), revents: 0)
       }
-      Log.info("waiting on \(pollfds.count) sockets", context: "Poll")
+      Log.info("waiting on \(pollfds.count - 1) sockets", context: "Poll")
       poll(&pollfds, nfds_t(pollfds.count), -1)
       cancelSocket.reset()
       var socketStates: [Int32: SocketState] = [:]
-      for pollSocket in pollfds {
+      for pollSocket in pollfds where pollSocket.fd != cancelSocket.outputFD {
         socketStates[pollSocket.fd] = .idle
         if pollSocket.revents != 0 {
           if pollSocket.revents & Int16(POLLERR | POLLHUP | POLLNVAL) != 0 {

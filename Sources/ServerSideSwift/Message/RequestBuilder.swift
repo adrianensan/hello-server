@@ -1,5 +1,7 @@
 import Foundation
 
+import ServerModels
+
 public class HTTPRequestBuilder: Message {
   
   public var clientAddress: String?
@@ -8,7 +10,7 @@ public class HTTPRequestBuilder: Message {
   public var host: String?
   public var cookies: [String: String] = [:]
   
-  public var request: HTTPRequest { HTTPRequest(requestBuilder: self) }
+  public var request: RawHTTPRequest { RawHTTPRequest(requestBuilder: self) }
 }
 
 extension HTTPRequestBuilder: CustomStringConvertible { public var description: String { request.description } }
