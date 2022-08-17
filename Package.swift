@@ -1,7 +1,7 @@
 // swift-tools-version:5.7
 import PackageDescription
 
-let useLocal = !#file.contains("/DerivedData/") 
+let useLocal = false && !#file.contains("/DerivedData/")
 
 var dependencies: [Package.Dependency] = []
 var additionalTargets: [Target] = []
