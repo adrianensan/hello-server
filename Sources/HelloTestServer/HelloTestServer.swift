@@ -1,9 +1,11 @@
-import ServerSideSwift
 import Foundation
 
-class CatGameServer: HTTPServer {
+import HelloCore
+import HelloServer
+
+actor CatGameServer: HTTPServer {
   
-  var name: String { "Cat Game" }
+  var name: String { "Hello Test" }
   var host: String { "ambient.com" }
   
   var staticFilesRoot: URL? {
@@ -20,14 +22,14 @@ class CatGameServer: HTTPServer {
     HTTPEndpoint(.get, "/test", defaultHandle)
   ]}
   
-  func defaultHandle(request: HTTPRequest) async -> HTTPResponse {
+  func defaultHandle(request: HTTPRequest<Data?>) async -> HTTPResponse<Data?> {
     let responseBuilder = ResponseBuilder()
     responseBuilder.bodyString = "Hello"
     return responseBuilder.response
   }
 }
 
-class HelloTestServer: HTTPServer {
+actor HelloTestServer: HTTPServer {
   var name: String { "Hello Test" }
   var host: String { "ambient.com" }
   

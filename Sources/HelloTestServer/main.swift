@@ -1,8 +1,10 @@
 import Foundation
 import CoreFoundation
 
-let catGameServer = CatGameServer()
-catGameServer.start()
-catGameServer.wwwRedirectServer().start()
+Task {
+  let catGameServer = CatGameServer()
+  try await catGameServer.start()
+  try await catGameServer.wwwRedirectServer().start()
+}
 
 CFRunLoopRun()

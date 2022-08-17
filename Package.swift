@@ -1,11 +1,18 @@
-// swift-tools-version:5.6
+// swift-tools-version:5.7
 import PackageDescription
 
-let useLocal = true
+let useLocal = !#file.contains("/DerivedData/") 
 
 var dependencies: [Package.Dependency] = []
 var additionalTargets: [Target] = []
 let opensslTargetDependency: Target.Dependency
+let helloCorePackage: Package.Dependency
+if useLocal {
+  helloCorePackage = .package(name: "hello-core", path: "../hello-core")
+} else {
+  helloCorePackage = .package(name: "server-side-swift", path: "../../../Hello/packages/server-side-swift")
+}
+dependencies.append(helloCorePackage)
 #if os(iOS) || os(macOS)
 let opensslPackage: Package.Dependency
 if useLocal {
@@ -24,35 +31,23 @@ opensslTargetDependency = .target(name: "OpenSSL")
 #endif
 
 let package = Package(
-    name: "ServerSideSwift",
+    name: "HelloServer",
     platforms: [.iOS(.v15), .macOS(.v12)],
     products: [
-      .library(name: "HelloLog", targets: ["HelloLog"]),
-      .library(name: "ServerModels", targets: ["ServerModels"]),
-      .library(name: "HelloAPI", targets: ["HelloAPI"]),
-      .library(name: "ServerSideSwift", targets: ["ServerSideSwift"]),
+      .library(name: "HelloServer", targets: ["HelloServer"]),
       .executable(name: "HelloTestServer", targets: ["HelloTestServer"])
     ],
     dependencies: dependencies,
     targets: additionalTargets + [
-      .target(name: "HelloLog",
-              swiftSettings: [.define("DEBUG", .when(configuration: .debug))]),
-      .target(name: "ServerModels",
-              swiftSettings: [.define("DEBUG", .when(configuration: .debug))]),
-      .target(name: "HelloAPI",
-              dependencies: ["ServerModels"],
-              path: "Sources/API",
-              swiftSettings: [.define("DEBUG", .when(configuration: .debug))]),
-      .target(name: "ServerSideSwift",
+      .target(name: "HelloServer",
               dependencies: [
-                "HelloLog",
-                "ServerModels",
-                "HelloAPI",
+                .product(name: "HelloCore", package: "hello-core"),
                 opensslTargetDependency,
               ],
+              path: "code",
               swiftSettings: [.define("DEBUG", .when(configuration: .debug))]),
       .executableTarget(name: "HelloTestServer",
-                        dependencies: ["ServerSideSwift"],
+                        dependencies: ["HelloServer"],
                         resources: [.copy("static")],
                         swiftSettings: [.define("DEBUG", .when(configuration: .debug))])
     ]
