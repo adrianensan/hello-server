@@ -34,7 +34,6 @@ public extension HTTPServer {
   }
   
   func staticFileHandler(request: HTTPRequest<Data?>) throws -> HTTPResponse<Data?> {
-    let responseBuilder = ResponseBuilder()
     guard let staticFilesRoot else { throw HTTPError(ccde: .notFound) }
     var url: URL = staticFilesRoot.appendingPathComponent(request.url)
     

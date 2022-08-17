@@ -23,9 +23,7 @@ actor CatGameServer: HTTPServer {
   ]}
   
   func defaultHandle(request: HTTPRequest<Data?>) async -> HTTPResponse<Data?> {
-    let responseBuilder = ResponseBuilder()
-    responseBuilder.bodyString = "Hello"
-    return responseBuilder.response
+    return HTTPResponse(status: .ok, body: try? "Hello".data())
   }
 }
 

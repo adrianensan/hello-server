@@ -5,29 +5,28 @@ let useLocal = !#file.contains("/DerivedData/")
 
 var dependencies: [Package.Dependency] = []
 var additionalTargets: [Target] = []
-let opensslTargetDependency: Target.Dependency
 let helloCorePackage: Package.Dependency
 if useLocal {
   helloCorePackage = .package(name: "hello-core", path: "../hello-core")
 } else {
-  helloCorePackage = .package(name: "server-side-swift", path: "../../../Hello/packages/server-side-swift")
+  helloCorePackage = .package(url: "https://github.com/adrianensan/hello-core", branch: "main")
 }
 dependencies.append(helloCorePackage)
+
 #if os(iOS) || os(macOS)
 let opensslPackage: Package.Dependency
 if useLocal {
   opensslPackage = .package(name: "openssl", path: "../openssl")
 } else {
-  opensslPackage = .package(url: "https://github.com/adrianensan/openssl",
-                            branch: "main")
+  opensslPackage = .package(url: "https://github.com/adrianensan/openssl", branch: "main")
 }
 dependencies.append(opensslPackage)
-opensslTargetDependency = .product(name: "OpenSSL", package: "openssl")
+let opensslTargetDependency: Target.Dependency = .product(name: "OpenSSL", package: "openssl")
 #else
 additionalTargets.append(.systemLibrary(name: "OpenSSL",
                                         pkgConfig: "openssl",
                                         providers: [.apt(["openssl libssl-dev"])]))
-opensslTargetDependency = .target(name: "OpenSSL")
+let opensslTargetDependency: Target.Dependency = .target(name: "OpenSSL")
 #endif
 
 let package = Package(
