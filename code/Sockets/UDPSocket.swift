@@ -20,7 +20,6 @@ public class UDPSocket: Socket {
     var bytesToSend = data.count
     var bytesSent = 0
     while bytesToSend > 0 {
-      Log.debug("Loop 16", context: "Loop")
       let passBytesSent = try sendDataPass(data: [UInt8](data[bytesSent...]), to: address)
       if passBytesSent <= 0 {
         throw SocketError.closed
@@ -50,7 +49,6 @@ public class UDPSocket: Socket {
   func recievePacket() async throws -> UDPPacket {
     var errorLoopCounter = 0
     while true {
-      Log.debug("Loop 17", context: "Loop")
       do {
         return try rawRecieveData()
       } catch SocketError.cantReadYet {
